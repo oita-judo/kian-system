@@ -102,3 +102,6 @@ hr{
   .row{ flex-direction: column; }
   button{ width:100%; }
 }
+/* ===== ブロックを非表示にする ===== */
+.kbn-block { display: none; margin-top: 12px; }
+.kbn-block.is-active { display: block; }

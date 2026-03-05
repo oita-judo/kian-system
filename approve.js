@@ -1,7 +1,7 @@
 // ================================
 // approve.js（2人承認・順番なし）
 // ================================
-const GAS_URL = "PASTE_GAS_WEBAPP_URL_HERE"; // ★あなたの /exec を入れる
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzR5kSUva_d-cx9R_6_J968AXRXi-7P4X7qt35Md6qrGXIlHgbmpv07JrI2n-uYTh-udw/exec"; // ★あなたの /exec を入れる
 
 function $(id){ return document.getElementById(id); }
 function setStatus(msg){ $("status").textContent = msg || ""; }

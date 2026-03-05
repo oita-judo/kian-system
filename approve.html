@@ -7,26 +7,41 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <main class="card">
-    <h1>承認ページ</h1>
 
-    <label>表示</label>
-    <select id="filter">
-      <option value="pending">未処理</option>
-      <option value="all">全て</option>
-      <option value="approved">承認</option>
-      <option value="rejected">差し戻し</option>
-    </select>
+<div class="container">
+  <h1>承認ページ</h1>
 
-    <div class="row">
-      <button id="loadBtn" type="button">読み込み</button>
-      <button id="refreshBtn" type="button" class="secondary">更新</button>
+  <div class="approveTop">
+    <div class="approveInfo">
+      <div class="small">日付（自動）</div>
+      <div id="today" class="today"></div>
     </div>
 
-    <p class="status" id="status"></p>
-    <div id="list"></div>
-  </main>
+    <div class="approveInfo">
+      <label>承認者名（必須）</label>
+      <input id="approverName" type="text" placeholder="例：教頭 / 事務長 / 担当A" required>
+    </div>
 
-  <script src="./approve.js"></script>
+    <div class="approveInfo">
+      <label>コメント（任意）</label>
+      <input id="comment" type="text" placeholder="例：確認しました">
+    </div>
+
+    <div class="row">
+      <button id="reloadBtn" type="button" class="secondary">最新に更新</button>
+    </div>
+  </div>
+
+  <hr>
+
+  <h2 class="h2">未承認（要承認）一覧</h2>
+  <p class="help">※承認は2人分たまったら「承認済」になります（順番なし）</p>
+
+  <div id="list" class="cards"></div>
+
+  <p id="status" class="status"></p>
+</div>
+
+<script src="./approve.js"></script>
 </body>
 </html>

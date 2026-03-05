@@ -11,26 +11,47 @@
 <div class="container">
   <h1>承認ページ</h1>
 
-  <div class="approveTop">
-    <div class="approveInfo">
-      <div class="small">日付（自動）</div>
-      <div id="today" class="today"></div>
-    </div>
+<div class="approveTop">
+  <div class="approveInfo">
+    <div class="small">日付（自動）</div>
+    <div id="today" class="today"></div>
+    <p class="help">※承認は2人分たまったら「承認済」になります（順番なし）</p>
+  </div>
 
-    <div class="approveInfo">
+  <div class="twoApprovers">
+    <div class="approverBox" id="boxA">
+      <div class="approverHead">
+        <div class="badge">承認者A</div>
+        <label class="radio">
+          <input type="radio" name="mySide" value="A" checked>
+          自分はこちら
+        </label>
+      </div>
       <label>承認者名（必須）</label>
-      <input id="approverName" type="text" placeholder="例：教頭 / 事務長 / 担当A" required>
-    </div>
-
-    <div class="approveInfo">
+      <input id="approverNameA" type="text" placeholder="例：教頭">
       <label>コメント（任意）</label>
-      <input id="comment" type="text" placeholder="例：確認しました">
+      <input id="commentA" type="text" placeholder="例：確認しました">
     </div>
 
-    <div class="row">
-      <button id="reloadBtn" type="button" class="secondary">最新に更新</button>
+    <div class="approverBox" id="boxB">
+      <div class="approverHead">
+        <div class="badge">承認者B</div>
+        <label class="radio">
+          <input type="radio" name="mySide" value="B">
+          自分はこちら
+        </label>
+      </div>
+      <label>承認者名（必須）</label>
+      <input id="approverNameB" type="text" placeholder="例：事務長">
+      <label>コメント（任意）</label>
+      <input id="commentB" type="text" placeholder="例：OKです">
     </div>
   </div>
+
+  <div class="row">
+    <button id="reloadBtn" type="button" class="secondary">最新に更新</button>
+  </div>
+</div>
 
   <hr>
 

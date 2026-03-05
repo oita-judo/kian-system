@@ -110,3 +110,7 @@ button:disabled{
 @media (max-width: 560px){
   .triple{ flex-direction:column; }
 }
+.container{
+max-width: 900px;
+margin: auto;
+}

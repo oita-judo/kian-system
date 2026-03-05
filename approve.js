@@ -88,10 +88,10 @@ function cardHtml(item){
     </details>
 
     <div class="row">
-      <button type="button" class="approveBtn" data-id="${escapeHtml(item.kianId)}">
-        承認する（この起案）
-      </button>
-    </div>
+  <button type="button" class="approveBtn" data-id="${escapeHtml(item.kianId)}">
+    ${mySide_()==="A" ? "承認Aで承認する" : "承認Bで承認する"}
+  </button>
+</div>
   </div>`;
 }
 

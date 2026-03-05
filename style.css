@@ -127,6 +127,6 @@ select:required:invalid{
 input:required:valid,
 textarea:required:valid,
 select:required:valid{
-  border: 1px solid var(--line2, #d1d5db) !important;
+  border: 10px solid var(--line2, #d1d5db) !important;
   background: #fff !important;
 }

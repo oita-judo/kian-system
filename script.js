@@ -1,7 +1,7 @@
 // ================================
 // script.js
 // ================================
-const GAS_URL = "YOUR_GAS_WEBAPP_URL";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzaSWN6j9G8KAPJQREm0yDzkzRC76U52YvU7KGjSlE-1KDsISObd5TajXrv2hNP3hs_aA/exec";
 
 function $(id){ return document.getElementById(id); }
 function v(id){ return ($(id)?.value || "").trim(); }

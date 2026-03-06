@@ -404,8 +404,8 @@ window.addEventListener("load", ()=>{
   applyTypeUI();
 
   if($("draftList")){
-    $("draftList").textContent = "「下書き一覧」を押すと表示されます。";
-  }
+  $("draftList").textContent = "";
+}
 
   $("type").addEventListener("change", applyTypeUI);
 

@@ -1,164 +1,156 @@
 // ================================
-// approve.js（2人承認・A/B列保存版）
-// - action=list: pending一覧
-// - action=approve: side=A/B を送って A/B 列に書く
+// approve.js
 // ================================
-
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwdd39RWeXGAWdKMgXXGzrkC_wy76zo3N6X2PR7dukQzaHYHVG0M_3p1UyJz3Ioej2AzA/exec"; // ★あなたの /exec を入れる
+const GAS_URL = "YOUR_GAS_WEBAPP_URL";
 
 function $(id){ return document.getElementById(id); }
-function setStatus(msg){ $("status").textContent = msg || ""; }
-
-function ymd(){
-  const d = new Date();
-  const pad = (n)=> String(n).padStart(2,"0");
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+function esc(s){
+  return String(s ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
 }
+function setMsg(msg){ $("msg").textContent = msg || ""; }
 
-async function post(payload){
+async function api_(payload){
   const res = await fetch(GAS_URL, {
-    method:"POST",
-    headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    method: "POST",
+    headers: { "Content-Type":"text/plain;charset=utf-8" },
     body: JSON.stringify(payload)
   });
   const text = await res.text();
-  let data;
-  try{ data = JSON.parse(text); }
-  catch{ throw new Error("GASの返却がJSONではありません: " + text); }
-  return data;
+  try{
+    return JSON.parse(text);
+  }catch{
+    throw new Error("JSONではない応答: " + text);
+  }
 }
 
-function escapeHtml(s){
-  return String(s ?? "")
-    .replaceAll("&","&amp;")
-    .replaceAll("<","&lt;")
-    .replaceAll(">","&gt;")
-    .replaceAll('"',"&quot;")
-    .replaceAll("'","&#39;");
-}
+function makeCard_(item){
+  const attach = item.attachmentUrl
+    ? `<a href="${esc(item.attachmentUrl)}" target="_blank" rel="noopener noreferrer">添付を開く</a>`
+    : "添付なし";
 
-function resolveKianId_(item){
-  return item.kianId || item.id || "";
-}
-
-function cardHtml(item){
-  const kid = resolveKianId_(item);
-  const typeLabel = item.typeLabel || item.type || "";
-  const title = item.title || "";
-  const content = item.content || "";
-
-  const meta = [];
-  if(item.amount) meta.push(`金額：${item.amount}`);
-  if(item.payee)  meta.push(`支払先：${item.payee}`);
-  if(item.payer)  meta.push(`納入者：${item.payer}`);
-  if(item.method) meta.push(`方法：${item.method}`);
-  if(item.attachmentUrl) meta.push(`添付：${item.attachmentUrl}`);
-
-  // 旧JSON方式の approvals が来ても表示は軽く対応（任意）
-  const approvals = Array.isArray(item.approvals) ? item.approvals : [];
-  const count = approvals.length;
+  const pdfBlock = item.pdfPreviewUrl
+    ? `
+      <div class="pdfWrap">
+        <div class="meta">
+          <span><a href="${esc(item.pdfUrl || item.pdfPreviewUrl)}" target="_blank" rel="noopener noreferrer">PDFを別窓で開く</a></span>
+        </div>
+        <iframe class="pdfFrame" src="${esc(item.pdfPreviewUrl)}"></iframe>
+      </div>
+    `
+    : `<div class="meta"><span>PDFなし</span></div>`;
 
   return `
-  <div class="cardItem">
-    <div class="cardHead">
-      <div class="badge">${escapeHtml(typeLabel)}</div>
-      <div class="kianId">起案番号：<b>${escapeHtml(kid)}</b></div>
+    <div class="cardItem">
+      <div class="cardHead">
+        <div>
+          <span class="badge">${esc(item.typeLabel || "")}</span>
+          <span class="badge">整理番号: ${esc(item.seiriNo || "")}</span>
+          <div class="kianId">起案番号: ${esc(item.kianId || "")}</div>
+        </div>
+        <div class="kianId">${esc(item.createdAt || "")}</div>
+      </div>
+
+      <div class="title">${esc(item.title || "")}</div>
+      <div class="content">${esc(item.content || "")}</div>
+
+      <div class="meta">
+        ${item.kou ? `<span>項: ${esc(item.kou)}</span>` : ""}
+        ${item.moku ? `<span>目: ${esc(item.moku)}</span>` : ""}
+        ${item.setsu ? `<span>節: ${esc(item.setsu)}</span>` : ""}
+        ${item.amount ? `<span>金額: ${esc(item.amount)}</span>` : ""}
+        ${item.payee ? `<span>支払先: ${esc(item.payee)}</span>` : ""}
+        ${item.payer ? `<span>納入者: ${esc(item.payer)}</span>` : ""}
+        ${item.method ? `<span>方法: ${esc(item.method)}</span>` : ""}
+        <span>${attach}</span>
+      </div>
+
+      ${pdfBlock}
+
+      <div class="twoApprovers">
+        <div class="approverBox">
+          <strong>承認者A</strong>
+          <label>氏名</label>
+          <input type="text" id="nameA_${esc(item.kianId)}" placeholder="承認者Aの名前">
+          <label>コメント</label>
+          <textarea id="commentA_${esc(item.kianId)}" rows="3"></textarea>
+          <button class="approveBtn" onclick="approveOne('${esc(item.kianId)}','A')">Aとして承認</button>
+        </div>
+
+        <div class="approverBox">
+          <strong>承認者B</strong>
+          <label>氏名</label>
+          <input type="text" id="nameB_${esc(item.kianId)}" placeholder="承認者Bの名前">
+          <label>コメント</label>
+          <textarea id="commentB_${esc(item.kianId)}" rows="3"></textarea>
+          <button class="approveBtn" onclick="approveOne('${esc(item.kianId)}','B')">Bとして承認</button>
+        </div>
+      </div>
     </div>
-
-    <div class="title">${escapeHtml(title)}</div>
-    <div class="content">${escapeHtml(content)}</div>
-
-    ${meta.length ? `<div class="meta">${meta.map(m=>`<div>${escapeHtml(m)}</div>`).join("")}</div>` : ""}
-
-    <details class="approvals">
-      <summary>承認状況：${count}/2（クリックで詳細）</summary>
-      <pre>${escapeHtml(approvals.map(a=>`・${a.name}（${a.at}）${a.comment? " / "+a.comment:""}`).join("\n") || "（承認記録はシートのA/B列で確認）")}</pre>
-    </details>
-
-    <div class="row2">
-      <button type="button" class="approveBtnA" data-id="${escapeHtml(kid)}">Aで承認</button>
-      <button type="button" class="approveBtnB" data-id="${escapeHtml(kid)}">Bで承認</button>
-    </div>
-  </div>`;
+  `;
 }
 
 async function loadList(){
-  if(!GAS_URL || GAS_URL.includes("PASTE_GAS_WEBAPP_URL_HERE")){
-    setStatus("GAS_URL が未設定です（approve.js先頭）。");
-    return;
-  }
-
-  setStatus("一覧取得中…");
+  setMsg("一覧を読み込み中…");
   try{
-    const data = await post({ action:"list", status:"pending", limit:50 });
+    const data = await api_({
+      action: "list",
+      status: "pending",
+      limit: 50
+    });
+
     if(!data.ok){
-      setStatus("失敗： " + (data.message || "unknown"));
+      setMsg("失敗: " + (data.message || "unknown"));
       return;
     }
 
-    const list = data.items || [];
-    $("list").innerHTML = list.length
-      ? list.map(cardHtml).join("")
-      : `<p class="help">未承認はありません。</p>`;
+    const box = $("cards");
+    if(!data.items || data.items.length === 0){
+      box.innerHTML = `<div class="cardItem">承認待ちの文書はありません。</div>`;
+      setMsg("");
+      return;
+    }
 
-    document.querySelectorAll(".approveBtnA").forEach(btn=>{
-      btn.addEventListener("click", ()=> approve(btn.dataset.id, "A"));
-    });
-    document.querySelectorAll(".approveBtnB").forEach(btn=>{
-      btn.addEventListener("click", ()=> approve(btn.dataset.id, "B"));
-    });
-
-    setStatus("");
+    box.innerHTML = data.items.map(makeCard_).join("");
+    setMsg("");
   }catch(err){
-    setStatus("通信エラー： " + err);
+    setMsg("読み込みエラー: " + err);
   }
 }
 
-async function approve(kianId, side){
-  if(!kianId){
-    setStatus("起案番号が取得できません。listの返却を確認してください。");
+async function approveOne(kianId, side){
+  const approverName = ($(`name${side}_${kianId}`)?.value || "").trim();
+  const comment = ($(`comment${side}_${kianId}`)?.value || "").trim();
+
+  if(!approverName){
+    alert(`承認者${side}の名前を入力してください。`);
     return;
   }
 
-  const nameInput = (side==="A") ? $("approverNameA") : $("approverNameB");
-  const commentInput = (side==="A") ? $("commentA") : $("commentB");
+  setMsg(`承認${side}を送信中…`);
 
-  const name = (nameInput?.value || "").trim();
-  const comment = (commentInput?.value || "").trim();
-
-  if(!name){
-    setStatus(`承認者${side}の名前を入力してください。`);
-    nameInput?.focus();
-    return;
-  }
-
-  if(!confirm(`起案 ${kianId} を承認しますか？（${side}）`)) return;
-
-  setStatus("承認送信中…");
   try{
-    const data = await post({
-      action:"approve",
+    const data = await api_({
+      action: "approve",
       kianId,
       side,
-      approverName: name,
-      comment,
-      at: ymd()
+      approverName,
+      comment
     });
 
     if(!data.ok){
-      setStatus("失敗： " + (data.message || "unknown"));
+      setMsg("失敗: " + (data.message || "unknown"));
       return;
     }
 
+    setMsg(`承認しました。状態: ${data.status}`);
     await loadList();
-    setStatus(`承認しました：${kianId}（${side}）`);
   }catch(err){
-    setStatus("通信エラー： " + err);
+    setMsg("承認エラー: " + err);
   }
 }
 
-window.addEventListener("load", ()=>{
-  $("today").textContent = ymd();
-  $("reloadBtn").addEventListener("click", loadList);
-  loadList();
-});
+window.addEventListener("load", loadList);

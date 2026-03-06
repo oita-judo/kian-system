@@ -10,28 +10,30 @@
   --soft:#f3f4f6;
 }
 
-*{ box-sizing:border-box; }
+*{
+  box-sizing:border-box;
+}
 
 body{
   margin:0;
   padding:16px;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
+  font-family:system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans JP", sans-serif;
   background:var(--bg);
   color:var(--text);
 }
 
 .container{
-  max-width: 900px;
-  margin: 0 auto;
+  max-width:900px;
+  margin:0 auto;
   background:var(--card);
   border:1px solid var(--line);
   border-radius:16px;
-  box-shadow: 0 8px 22px rgba(17,24,39,.06);
+  box-shadow:0 8px 22px rgba(17,24,39,.06);
   padding:16px;
 }
 
 h1{
-  margin:0 0 12px;
+  margin:0 0 16px;
   font-size:20px;
 }
 
@@ -42,7 +44,9 @@ label{
   color:var(--muted);
 }
 
-input, textarea, select{
+input,
+textarea,
+select{
   width:100%;
   margin-top:6px;
   padding:10px 12px;
@@ -54,33 +58,18 @@ input, textarea, select{
 }
 
 textarea{
-  resize: vertical;
+  resize:vertical;
 }
 
-input:focus, textarea:focus, select:focus{
+input:focus,
+textarea:focus,
+select:focus{
   border-color:#9ca3af;
   box-shadow:0 0 0 4px rgba(17,24,39,.06);
 }
 
-/* 横1列（3つ並べる） */
-.triple{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-}
-.triple .field{
-  flex:1 1 0;
-  min-width:0;
-}
-.triple .field label{ margin-top:0; }
-
-input[type="number"]{ text-align:right; }
-
-.row{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-top:14px;
+input[type="number"]{
+  text-align:right;
 }
 
 button{
@@ -94,14 +83,20 @@ button{
 }
 
 button.secondary{
-  background: var(--soft);
-  color: var(--text);
-  border-color: var(--line2);
+  background:var(--soft);
+  color:var(--text);
+  border-color:var(--line2);
 }
 
 button:disabled{
   opacity:.6;
   cursor:not-allowed;
+}
+
+hr{
+  margin:16px 0;
+  border:none;
+  border-top:1px solid var(--line);
 }
 
 .status{
@@ -116,10 +111,53 @@ button:disabled{
   color:var(--muted);
 }
 
-hr{
-  margin:16px 0;
-  border:none;
-  border-top:1px solid var(--line);
+/* 必須未入力 */
+input:required:invalid,
+textarea:required:invalid,
+select:required:invalid{
+  border:2px solid #e53935 !important;
+  background:#fff5f5 !important;
+}
+
+/* 下書き */
+.draft-area{
+  margin-bottom:8px;
+}
+
+.draft-row{
+  display:grid;
+  grid-template-columns:120px 1fr 1fr 1fr 1fr;
+  gap:10px;
+  align-items:center;
+}
+
+.draft-row input{
+  width:100%;
+  height:48px;
+  margin-top:0;
+}
+
+.draft-row button{
+  width:100%;
+  height:48px;
+  margin-top:0;
+  padding:0 12px;
+}
+
+.listBtn{
+  background:#d1d5db !important;
+  color:#111827 !important;
+  border:1px solid #c3c8d0 !important;
+}
+
+.listBtn:hover{
+  background:#c3c8d0 !important;
+}
+
+.draft-note{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--muted);
 }
 
 .draftList{
@@ -128,93 +166,114 @@ hr{
   border-radius:12px;
   padding:10px 12px;
   margin-top:10px;
+  min-height:42px;
   white-space:pre-wrap;
   font-size:12px;
   color:var(--text);
 }
 
-/* 必須：未入力を赤枠（確実版） */
-input:required:invalid,
-textarea:required:invalid,
-select:required:invalid{
-  border: 2px solid #e53935 !important;
-  background: #fff5f5 !important;
-}
-/* ============================
-   下書きボタン：4つ横並び（PC）
-   スマホ：2列
-============================ */
-
-/* 下書きボタン行だけをグリッド化（row全体が他でも使われている場合に備えて） */
-.row{
+/* 区分＋整理番号 */
+.type-seiri-row{
   display:grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-top:8px;
+}
+
+.field{
+  min-width:0;
+}
+
+.field label{
+  margin-top:0;
+}
+
+/* 3列 */
+.triple{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
   gap:10px;
-  margin-top:14px;
+  margin-top:10px;
 }
 
-/* ボタンを少し小さめ＆均一に */
-.row button{
-  width:100%;
-  padding:10px 12px;
-  font-size:14px;
-  border-radius:12px;
+.triple .field label{
+  margin-top:0;
 }
 
-/* ホバーでわかりやすく */
-.row button:hover{
-  filter: brightness(0.95);
+/* 送信ボタン */
+.action-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:16px;
 }
 
-/* 下書き一覧だけ色を変える（黒以外） */
-.listBtn{
-  background:#e5e7eb !important;   /* 明るいグレー */
-  color:#111827 !important;
-  border:1px solid #d1d5db !important;
+/* 承認画面用 */
+.h2{
+  margin:0;
+  font-size:16px;
 }
 
-/* 下書き一覧ボタンのホバー */
-.listBtn:hover{
-  background:#d1d5db !important;
+.approveTop{
+  display:grid;
+  gap:10px;
 }
 
-/* スマホは2列にして押しやすく */
-@media (max-width: 560px){
-  .row{
-    grid-template-columns: repeat(2, 1fr);
-  }
+.approveInfo .small{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:6px;
 }
-/* ===== 承認画面用 ===== */
-.h2{ margin:0; font-size:16px; }
-.approveTop{ display:grid; gap:10px; }
-.approveInfo .small{ font-size:12px; color:var(--muted); margin-bottom:6px; }
-.today{ font-weight:700; }
 
-.cards{ display:grid; gap:12px; margin-top:12px; }
+.today{
+  font-weight:700;
+}
+
+.cards{
+  display:grid;
+  gap:12px;
+  margin-top:12px;
+}
+
 .cardItem{
   border:1px solid var(--line);
   border-radius:16px;
   padding:12px;
   background:#fff;
 }
+
 .cardHead{
   display:flex;
   justify-content:space-between;
   align-items:center;
   gap:10px;
 }
+
 .badge{
   display:inline-block;
   padding:4px 10px;
   border-radius:999px;
-  background: var(--soft);
+  background:var(--soft);
   border:1px solid var(--line2);
   font-size:12px;
 }
-.kianId{ font-size:12px; color:var(--muted); }
 
-.title{ font-size:16px; font-weight:700; margin-top:10px; }
-.content{ margin-top:6px; white-space:pre-wrap; color:var(--text); }
+.kianId{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.title{
+  font-size:16px;
+  font-weight:700;
+  margin-top:10px;
+}
+
+.content{
+  margin-top:6px;
+  white-space:pre-wrap;
+  color:var(--text);
+}
 
 .meta{
   margin-top:8px;
@@ -231,20 +290,25 @@ select:required:invalid{
   border-radius:12px;
   padding:8px 10px;
 }
-.approvals summary{ cursor:pointer; color:var(--muted); }
-.approvals pre{ margin:8px 0 0; white-space:pre-wrap; font-size:12px; }
+
+.approvals summary{
+  cursor:pointer;
+  color:var(--muted);
+}
+
+.approvals pre{
+  margin:8px 0 0;
+  white-space:pre-wrap;
+  font-size:12px;
+}
 
 .approveBtn{
   width:100%;
 }
-/* スマホは縦並び */
-@media (max-width: 560px){
-  .triple{ flex-direction:column; }
-}
-/* 承認者A/B 2列 */
+
 .twoApprovers{
   display:grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns:1fr 1fr;
   gap:12px;
   margin-top:10px;
 }
@@ -272,51 +336,32 @@ select:required:invalid{
   gap:6px;
 }
 
-@media (max-width: 700px){
-  .twoApprovers{ grid-template-columns: 1fr; }
-}
 .row2{
   display:grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns:1fr 1fr;
   gap:10px;
   margin-top:10px;
 }
+
 .row2 button{
   width:100%;
 }
-.row{
-  display:flex;
-  gap:20px;
-  align-items:flex-end;
-}
 
-.row div{
-  display:flex;
-  flex-direction:column;
-}
-.draft-buttons{
-  display:grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap:12px;
-  margin-top:10px;
-}
+/* レスポンシブ */
+@media (max-width:700px){
+  .draft-row{
+    grid-template-columns:1fr;
+  }
 
-.draft-buttons button{
-  width:100%;
-}
-.draft-row{
-  display:grid;
-  grid-template-columns: 120px 1fr 1fr 1fr 1fr;
-  gap:10px;
-  margin-bottom:10px;
-}
+  .type-seiri-row{
+    grid-template-columns:1fr;
+  }
 
-.draft-row input{
-  width:100%;
-  height:42px;
-  box-sizing:border-box;
-}
+  .triple{
+    grid-template-columns:1fr;
+  }
 
-.draft-row button{
-  width:100%;
+  .twoApprovers{
+    grid-template-columns:1fr;
+  }
 }

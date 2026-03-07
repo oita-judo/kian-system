@@ -336,3 +336,32 @@ select:required:invalid{
   color:var(--muted);
   margin-bottom:6px;
 }
+.file-add-row{
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+
+.fileList{
+  margin:10px 0 0;
+  padding-left:20px;
+  font-size:13px;
+}
+
+.fileList li{
+  margin-bottom:6px;
+}
+
+.fileItemRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.fileRemoveBtn{
+  padding:4px 10px;
+  font-size:12px;
+  border-radius:8px;
+}

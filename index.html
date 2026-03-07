@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>文書起案システム</title>
+  <title>大分県柔道連盟_文書起案システム</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -131,9 +131,17 @@
       <textarea id="g_content" rows="5"></textarea>
     </div>
 
-    <label for="files">添付PDF（最大5）</label>
-    <input id="files" type="file" accept="application/pdf" multiple>
-    <div class="help">PDFのみ / 最大5ファイル</div>
+    <label for="fileOne">添付PDF（最大5）</label>
+<input id="fileOne" type="file" accept="application/pdf">
+
+<div class="help">PDFのみ / 1件ずつ追加 / 最大5ファイル</div>
+
+<div class="file-add-row">
+  <button id="addFileBtn" type="button" class="secondary">添付を追加</button>
+  <button id="clearFilesBtn" type="button" class="secondary">添付を全削除</button>
+</div>
+
+<ul id="fileList" class="fileList"></ul>
 
     <div class="action-row">
       <button id="sendBtn" type="button">送信</button>

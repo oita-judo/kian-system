@@ -1,5 +1,6 @@
 // ================================
 // script.js
+// 1件ずつ添付追加版
 // ================================
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzbZsJ-VBpqwUkAkz73x9mUALE0CyBweSCE14uGw1bgCRqb8c6y08asj81ABJzYONKP4w/exec";
 
@@ -7,6 +8,12 @@ function $(id){ return document.getElementById(id); }
 function v(id){ return ($(id)?.value || "").trim(); }
 function setStatus(msg){ $("status").textContent = msg || ""; }
 
+// 1件ずつ追加した添付PDFを保持
+let selectedFiles = [];
+
+// ================================
+// 区分切替
+// ================================
 function applyTypeUI(){
   const t = $("type").value;
   $("form_shishutsu").style.display = (t === "shishutsu") ? "" : "none";
@@ -14,6 +21,9 @@ function applyTypeUI(){
   $("form_ringi").style.display     = (t === "ringi")     ? "" : "none";
 }
 
+// ================================
+// バリデーション
+// ================================
 function validate(payload){
   if(!payload.type) return "未入力：区分";
   if(!payload.seiriNo) return "未入力：整理番号";
@@ -37,6 +47,9 @@ function validate(payload){
   return "";
 }
 
+// ================================
+// File -> DataURL
+// ================================
 function readFileAsDataURL(file){
   return new Promise((resolve, reject)=>{
     const r = new FileReader();
@@ -46,6 +59,92 @@ function readFileAsDataURL(file){
   });
 }
 
+// ================================
+// 添付ファイル表示
+// ================================
+function renderSelectedFiles(){
+  const box = $("fileList");
+  if(!box) return;
+
+  if(selectedFiles.length === 0){
+    box.innerHTML = "";
+    return;
+  }
+
+  box.innerHTML = selectedFiles.map((file, i) => `
+    <li>
+      <div class="fileItemRow">
+        <span>${i + 1}. ${escapeHtml_(file.name)}</span>
+        <button type="button" class="fileRemoveBtn secondary" onclick="removeSelectedFile(${i})">削除</button>
+      </div>
+    </li>
+  `).join("");
+}
+
+function removeSelectedFile(index){
+  selectedFiles.splice(index, 1);
+  renderSelectedFiles();
+  setStatus(`添付を削除しました（${selectedFiles.length}件）`);
+}
+
+function addSelectedFile(){
+  const input = $("fileOne");
+  const file = input?.files?.[0];
+
+  if(!file){
+    setStatus("追加するPDFを選んでください。");
+    return;
+  }
+
+  if(file.type !== "application/pdf"){
+    setStatus("PDFのみ追加できます。");
+    input.value = "";
+    return;
+  }
+
+  if(selectedFiles.length >= 5){
+    setStatus("添付PDFは最大5件です。");
+    input.value = "";
+    return;
+  }
+
+  const duplicated = selectedFiles.some(f =>
+    f.name === file.name &&
+    f.size === file.size &&
+    f.lastModified === file.lastModified
+  );
+
+  if(duplicated){
+    setStatus("同じファイルは追加済みです。");
+    input.value = "";
+    return;
+  }
+
+  selectedFiles.push(file);
+  input.value = "";
+  renderSelectedFiles();
+  setStatus(`添付を追加しました（${selectedFiles.length}件）`);
+}
+
+function clearSelectedFiles(){
+  selectedFiles = [];
+  if($("fileOne")) $("fileOne").value = "";
+  renderSelectedFiles();
+  setStatus("添付を全削除しました。");
+}
+
+// HTML表示用の最小エスケープ
+function escapeHtml_(s){
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ================================
+// 送信データ組み立て
+// ================================
 async function buildPayload(){
   const type = $("type").value;
   const seiriNo = $("seiriNo") ? $("seiriNo").value.trim() : "";
@@ -85,16 +184,11 @@ async function buildPayload(){
     payload.content = v("g_content");
   }
 
-  const files = $("files")?.files || [];
-  if(files.length > 5){
+  if(selectedFiles.length > 5){
     throw new Error("PDFは5件までです");
   }
 
-  for (const file of files) {
-    if (file.type !== "application/pdf") {
-      throw new Error("PDFのみ添付できます");
-    }
-
+  for (const file of selectedFiles) {
     const dataUrl = await readFileAsDataURL(file);
     payload.attachments.push({
       fileName: file.name,
@@ -106,6 +200,9 @@ async function buildPayload(){
   return payload;
 }
 
+// ================================
+// 送信
+// ================================
 function setSending(flag){
   $("sendBtn").disabled = !!flag;
 }
@@ -162,6 +259,7 @@ async function send(){
         writeDrafts_(drafts);
       }
     }
+
   }catch(err){
     setStatus("通信エラー: " + err);
   }finally{
@@ -169,6 +267,9 @@ async function send(){
   }
 }
 
+// ================================
+// クリア
+// ================================
 function clearForm(){
   if($("type")) $("type").value = "";
   if($("seiriNo")) $("seiriNo").value = "";
@@ -183,84 +284,20 @@ function clearForm(){
 
   if($("s_method")) $("s_method").value = "口座振込";
   if($("r_method")) $("r_method").value = "口座振込";
-  if($("files")) $("files").value = "";
+
+  selectedFiles = [];
+  if($("fileOne")) $("fileOne").value = "";
+  renderSelectedFiles();
 
   applyTypeUI();
   setStatus("");
 }
 
-// ===== 下書き =====
-const DRAFTS_KEY = "kian_drafts_multi_v7";
-let selectedFiles = [];
-function renderSelectedFiles(){
-  const box = $("fileList");
-  if(!box) return;
+// ================================
+// 下書き
+// ================================
+const DRAFTS_KEY = "kian_drafts_multi_v8";
 
-  if(selectedFiles.length === 0){
-    box.innerHTML = "";
-    return;
-  }
-
-  box.innerHTML = selectedFiles.map((file, i) => `
-    <li>
-      <div class="fileItemRow">
-        <span>${i + 1}. ${file.name}</span>
-        <button type="button" class="fileRemoveBtn secondary" onclick="removeSelectedFile(${i})">削除</button>
-      </div>
-    </li>
-  `).join("");
-}
-
-function removeSelectedFile(index){
-  selectedFiles.splice(index, 1);
-  renderSelectedFiles();
-}
-
-function addSelectedFile(){
-  const input = $("fileOne");
-  const file = input?.files?.[0];
-
-  if(!file){
-    setStatus("追加するPDFを選んでください。");
-    return;
-  }
-
-  if(file.type !== "application/pdf"){
-    setStatus("PDFのみ追加できます。");
-    input.value = "";
-    return;
-  }
-
-  if(selectedFiles.length >= 5){
-    setStatus("添付PDFは最大5件です。");
-    input.value = "";
-    return;
-  }
-
-  const duplicated = selectedFiles.some(f =>
-    f.name === file.name &&
-    f.size === file.size &&
-    f.lastModified === file.lastModified
-  );
-
-  if(duplicated){
-    setStatus("同じファイルは追加済みです。");
-    input.value = "";
-    return;
-  }
-
-  selectedFiles.push(file);
-  input.value = "";
-  renderSelectedFiles();
-  setStatus(`添付を追加しました（${selectedFiles.length}件）`);
-}
-
-function clearSelectedFiles(){
-  selectedFiles = [];
-  if($("fileOne")) $("fileOne").value = "";
-  renderSelectedFiles();
-  setStatus("添付を全削除しました。");
-}
 function draftNo_(){ return v("draftNo"); }
 
 function readDrafts_(){
@@ -376,7 +413,10 @@ function renderDraftList(){
 
 function saveDraftByNo(){
   const no = draftNo_();
-  if(!no){ setStatus("下書き番号を入力してください。"); return; }
+  if(!no){
+    setStatus("下書き番号を入力してください。");
+    return;
+  }
   const drafts = readDrafts_();
   drafts[no] = getDraftDataNow_();
   writeDrafts_(drafts);
@@ -385,34 +425,56 @@ function saveDraftByNo(){
 
 function loadDraftByNo(){
   const no = draftNo_();
-  if(!no){ setStatus("下書き番号を入力してください。"); return; }
+  if(!no){
+    setStatus("下書き番号を入力してください。");
+    return;
+  }
   const drafts = readDrafts_();
-  if(!drafts[no]){ setStatus(`その番号の下書きがありません（番号：${no}）`); return; }
+  if(!drafts[no]){
+    setStatus(`その番号の下書きがありません（番号：${no}）`);
+    return;
+  }
   applyDraftData_(drafts[no]);
   setStatus(`下書きを復元しました（番号：${no}）`);
 }
 
 function deleteDraftByNo(){
   const no = draftNo_();
-  if(!no){ setStatus("下書き番号を入力してください。"); return; }
+  if(!no){
+    setStatus("下書き番号を入力してください。");
+    return;
+  }
   const drafts = readDrafts_();
-  if(!drafts[no]){ setStatus(`その番号の下書きがありません（番号：${no}）`); return; }
+  if(!drafts[no]){
+    setStatus(`その番号の下書きがありません（番号：${no}）`);
+    return;
+  }
   if(!confirm(`下書き（番号：${no}）を削除しますか？`)) return;
+
   delete drafts[no];
   writeDrafts_(drafts);
   setStatus(`下書きを削除しました（番号：${no}）`);
   $("draftList").textContent = "";
 }
 
+// ================================
+// 初期化
+// ================================
 window.addEventListener("load", ()=>{
   applyTypeUI();
-  $("draftList").textContent = "";
+
+  if($("draftList")) $("draftList").textContent = "";
+  renderSelectedFiles();
 
   $("type").addEventListener("change", applyTypeUI);
   $("sendBtn").addEventListener("click", send);
   $("clearBtn").addEventListener("click", clearForm);
+
   $("saveDraftBtn").addEventListener("click", saveDraftByNo);
   $("loadDraftBtn").addEventListener("click", loadDraftByNo);
   $("deleteDraftBtn").addEventListener("click", deleteDraftByNo);
   $("listDraftBtn").addEventListener("click", renderDraftList);
+
+  if($("addFileBtn")) $("addFileBtn").addEventListener("click", addSelectedFile);
+  if($("clearFilesBtn")) $("clearFilesBtn").addEventListener("click", clearSelectedFiles);
 });

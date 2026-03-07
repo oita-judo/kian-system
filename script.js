@@ -2,7 +2,7 @@
 // script.js
 // スプレッドシート下書き一覧・復元・削除対応版
 // ================================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzbZsJ-VBpqwUkAkz73x9mUALE0CyBweSCE14uGw1bgCRqb8c6y08asj81ABJzYONKP4w/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxfuFEkPyAfhyiN6Ai5KDi-7fkpFAOfZmQcEMKdoZq7jVm2me6GJu9mxYAk28KjmjTIpA/exec";
 
 function $(id){ return document.getElementById(id); }
 function v(id){ return ($(id)?.value || "").trim(); }

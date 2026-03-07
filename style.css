@@ -92,9 +92,9 @@ hr{
 }
 
 .status{
-  margin-top:12px;
   font-size:13px;
-  white-space:pre-wrap;
+  color:#dc2626;
+  white-space:nowrap;
 }
 
 .help{

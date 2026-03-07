@@ -5,139 +5,36 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>大分県柔道連盟 文書起案システム</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    .file-row{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      margin-top:10px;
-      flex-wrap:wrap;
-    }
-    .file-row input[type=file]{
-      flex:1;
-      min-width:260px;
-    }
-    .addBtn{
-      background:#2563eb;
-      color:#fff;
-      border:none;
-    }
-    .addBtn:hover{
-      background:#1d4ed8;
-    }
-    .deleteBtn{
-      background:#dc2626;
-      color:#fff;
-      border:none;
-    }
-    .deleteBtn:hover{
-      background:#b91c1c;
-    }
-    .fileList{
-      margin:10px 0 0;
-      padding-left:20px;
-      font-size:13px;
-    }
-    .fileList li{
-      margin-bottom:6px;
-    }
-    .fileItemRow{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .fileRemoveBtn{
-      padding:4px 10px;
-      font-size:12px;
-      border-radius:8px;
-    }
-
-    .sheetDraftArea{
-      margin:18px 0;
-      padding:12px;
-      border:1px solid #e5e7eb;
-      border-radius:14px;
-      background:#fafafa;
-    }
-    .sheetDraftTitle{
-      font-weight:700;
-      margin-bottom:8px;
-    }
-    .sheetDraftList{
-      display:grid;
-      gap:10px;
-      margin-top:10px;
-    }
-    .sheetDraftCard{
-      border:1px solid #d1d5db;
-      border-radius:12px;
-      background:#fff;
-      padding:10px 12px;
-    }
-    .sheetDraftMeta{
-      font-size:12px;
-      color:#6b7280;
-      margin-bottom:4px;
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
-    .sheetDraftTitleText{
-      font-weight:700;
-      margin-bottom:6px;
-    }
-    .sheetDraftButtons{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:8px;
-    }
-    .miniBtn{
-      padding:6px 10px;
-      font-size:12px;
-      border-radius:8px;
-    }
-    .miniPrimary{
-      background:#111827;
-      color:#fff;
-      border:none;
-    }
-    .miniDanger{
-      background:#dc2626;
-      color:#fff;
-      border:none;
-    }
-  </style>
 </head>
 <body>
   <div class="container">
     <h1>大分県柔道連盟　文書起案システム</h1>
 
- <div class="draft-layout">
+    <!-- 下書きエリア -->
+    <div class="draft-layout">
 
-  <!-- 左：下書き操作 -->
-  <div class="draft-left">
-    <div class="draft-tools">
-      <input id="draftNo" type="text" placeholder="下書き番号">
-      <button id="saveDraftBtn" type="button">下書き保存</button>
-      <button id="listDraftBtn" class="listBtn" type="button">下書き一覧</button>
+      <!-- 左：下書き操作 -->
+      <div class="draft-left">
+        <div class="draft-tools">
+          <input id="draftNo" type="text" placeholder="下書き番号">
+          <button id="saveDraftBtn" type="button">下書き保存</button>
+          <button id="listDraftBtn" class="listBtn" type="button">下書き一覧</button>
+        </div>
+
+        <div class="draft-note">
+          下書きはスプレッドシートに保存されます。添付ファイルは下書きには含まれません。
+        </div>
+      </div>
+
+      <!-- 右：下書き一覧 -->
+      <div class="draft-right">
+        <div class="sheetDraftArea">
+          <div class="sheetDraftTitle">下書き一覧</div>
+          <div id="draftSheetList" class="sheetDraftList">読み込み中...</div>
+        </div>
+      </div>
+
     </div>
-
-    <div class="draft-note">
-      下書きはスプレッドシートに保存されます。添付ファイルは下書きには含まれません。
-    </div>
-  </div>
-
-  <!-- 右：下書き一覧 -->
-  <div class="draft-right">
-    <div class="sheetDraftArea">
-      <div class="sheetDraftTitle">下書き一覧</div>
-      <div id="draftSheetList" class="sheetDraftList">読み込み中...</div>
-    </div>
-  </div>
-
-</div>
 
     <hr>
 
@@ -185,37 +82,41 @@
       </div>
 
       <div class="title-row">
-
-  <div class="field">
-    <label for="s_title">件名</label>
-    <input id="s_title" type="text">
-  </div>
-
-  <div class="field">
-    <label for="s_writer">記載者氏名</label>
-    <input id="s_writer" type="text">
-  </div>
-
-</div>
+        <div class="field">
+          <label for="s_title">件名</label>
+          <input id="s_title" type="text">
+        </div>
+        <div class="field">
+          <label for="s_writer">記載者氏名</label>
+          <input id="s_writer" type="text">
+        </div>
+      </div>
 
       <label for="s_content">内容</label>
       <textarea id="s_content" rows="4"></textarea>
 
-      <div class="triple">
+      <div class="quad">
         <div class="field">
           <label for="s_amount">支出金額</label>
           <input id="s_amount" type="number">
         </div>
+
         <div class="field">
           <label for="s_payee">支払先</label>
           <input id="s_payee" type="text">
         </div>
+
         <div class="field">
           <label for="s_method">支払方法</label>
           <select id="s_method">
             <option value="口座振込">口座振込</option>
             <option value="現金">現金</option>
           </select>
+        </div>
+
+        <div class="field">
+          <label for="s_date">支出年月日</label>
+          <input id="s_date" type="text" placeholder="例：2026/03/07">
         </div>
       </div>
     </div>
@@ -238,29 +139,30 @@
       </div>
 
       <div class="title-row">
-  <div class="field">
-    <label for="r_title">件名</label>
-    <input id="r_title" type="text">
-  </div>
-
-  <div class="field">
-    <label for="r_writer">記載者氏名</label>
-    <input id="r_writer" type="text">
-  </div>
-</div>
+        <div class="field">
+          <label for="r_title">件名</label>
+          <input id="r_title" type="text">
+        </div>
+        <div class="field">
+          <label for="r_writer">記載者氏名</label>
+          <input id="r_writer" type="text">
+        </div>
+      </div>
 
       <label for="r_content">内容</label>
       <textarea id="r_content" rows="4"></textarea>
 
-      <div class="triple">
+      <div class="quad">
         <div class="field">
           <label for="r_amount">収入金額</label>
           <input id="r_amount" type="number">
         </div>
+
         <div class="field">
           <label for="r_payer">納入者</label>
           <input id="r_payer" type="text">
         </div>
+
         <div class="field">
           <label for="r_method">受取方法</label>
           <select id="r_method">
@@ -268,44 +170,47 @@
             <option value="現金">現金</option>
           </select>
         </div>
+
+        <div class="field">
+          <label for="r_date">収納年月日</label>
+          <input id="r_date" type="text" placeholder="例：2026/03/07">
+        </div>
       </div>
     </div>
 
     <!-- 稟議 -->
     <div id="form_ringi" style="display:none;">
       <div class="title-row">
-  <div class="field">
-    <label for="r_title">件名</label>
-    <input id="r_title" type="text">
-  </div>
-
-  <div class="field">
-    <label for="r_writer">記載者氏名</label>
-    <input id="r_writer" type="text">
-  </div>
-</div>
+        <div class="field">
+          <label for="g_title">件名</label>
+          <input id="g_title" type="text">
+        </div>
+        <div class="field">
+          <label for="g_writer">記載者氏名</label>
+          <input id="g_writer" type="text">
+        </div>
+      </div>
 
       <label for="g_content">内容</label>
       <textarea id="g_content" rows="5"></textarea>
     </div>
 
     <!-- 添付 -->
-    <label for="fileOne">添付ファイル（最大5）</label>
+    <label for="fileOne">ファイル添付（最大5） / 1件ずつ追加</label>
     <div class="file-row">
       <input id="fileOne" type="file">
       <button id="addFileBtn" type="button" class="addBtn">添付を追加</button>
       <button id="clearFilesBtn" type="button" class="deleteBtn">添付を全削除</button>
     </div>
-    <div class="help">ファイル添付（最大5） / 1件ずつ追加</div>
     <ul id="fileList" class="fileList"></ul>
 
     <!-- 操作 -->
     <div class="action-row">
-  <button id="sendBtn">送信</button>
-  <button id="clearBtn" class="secondary">クリア</button>
-
-  <div id="status" class="status"></div>
-</div>
+      <button id="sendBtn" type="button">送信</button>
+      <button id="clearBtn" type="button" class="secondary">クリア</button>
+      <div id="status" class="status"></div>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>

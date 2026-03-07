@@ -1,9 +1,8 @@
 // ================================
 // script.js
-// スプレッドシート下書き一覧・復元・削除対応版
+// 下書き一覧表形式・復元・削除対応版
 // ================================
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyn8XP_gXpl7ahT1zXfzhucD7jSmtV5FmTxz1ozFSaA03nkTHQ4C0IZhdiQ1pq6JTxp0Q/exec";
-
 
 function $(id){ return document.getElementById(id); }
 function v(id){ return ($(id)?.value || "").trim(); }
@@ -82,16 +81,19 @@ function validate(payload){
 
   if(payload.type === "shishutsu"){
     if(!payload.title) return "未入力：件名";
+    if(!payload.writer) return "未入力：記載者氏名";
     if(!payload.content) return "未入力：内容";
     if(!payload.amount) return "未入力：支出金額";
     if(!payload.payee) return "未入力：支払先";
   } else if(payload.type === "shuunyuu"){
     if(!payload.title) return "未入力：件名";
+    if(!payload.writer) return "未入力：記載者氏名";
     if(!payload.content) return "未入力：内容";
     if(!payload.amount) return "未入力：収入金額";
     if(!payload.payer) return "未入力：納入者";
   } else if(payload.type === "ringi"){
     if(!payload.title) return "未入力：件名";
+    if(!payload.writer) return "未入力：記載者氏名";
     if(!payload.content) return "未入力：内容";
   }
 
@@ -201,11 +203,12 @@ async function buildPayload(){
     payload.amount = v("s_amount");
     payload.payee = v("s_payee");
     payload.method = $("s_method").value || "";
+    payload.date = v("s_date");
   }
 
   if(type === "shuunyuu"){
     payload.title = v("r_title");
-    payload.writer = v("s_writer");
+    payload.writer = v("r_writer");
     payload.content = v("r_content");
     payload.kou = v("r_kou");
     payload.moku = v("r_moku");
@@ -213,11 +216,12 @@ async function buildPayload(){
     payload.amount = v("r_amount");
     payload.payer = v("r_payer");
     payload.method = $("r_method").value || "";
+    payload.date = v("r_date");
   }
 
   if(type === "ringi"){
     payload.title = v("g_title");
-    payload.writer = v("s_writer");
+    payload.writer = v("g_writer");
     payload.content = v("g_content");
   }
 
@@ -245,11 +249,6 @@ function setSending(flag){
 }
 
 async function send(){
-  if(!GAS_URL || GAS_URL.includes("YOUR_GAS_WEBAPP_URL")){
-    setStatus("GAS_URL を設定してください。");
-    return;
-  }
-
   setSending(true);
   setStatus("送信中…");
 
@@ -269,11 +268,9 @@ async function send(){
     }
 
     setStatus(
-      "送信しました。\n" +
-      "整理番号: " + (data.seiriNo || "") + "\n" +
-      "起案番号: " + (data.kianId || "") + "\n" +
-      "起案書PDF: " + (data.pdfUrl || "") + "\n" +
-      "添付件数: " + (data.attachmentCount ?? 0)
+      "送信しました / 整理番号: " + (data.seiriNo || "") +
+      " / 起案番号: " + (data.kianId || "") +
+      " / 添付件数: " + (data.attachmentCount ?? 0)
     );
 
     const no = draftNo_();
@@ -305,9 +302,9 @@ function clearForm(){
   if($("draftNo")) $("draftNo").value = "";
 
   [
-    "s_kou","s_moku","s_setsu","s_title","s_content","s_amount","s_payee",
-    "r_kou","r_moku","r_setsu","r_title","r_content","r_amount","r_payer",
-    "g_title","g_content"
+    "s_kou","s_moku","s_setsu","s_title","s_writer","s_content","s_amount","s_payee","s_date",
+    "r_kou","r_moku","r_setsu","r_title","r_writer","r_content","r_amount","r_payer","r_date",
+    "g_title","g_writer","g_content"
   ].forEach(id=>{
     if($(id)) $(id).value = "";
   });
@@ -349,6 +346,7 @@ function fillFormFromDraft_(d){
     if($("s_amount")) $("s_amount").value = d.amount || "";
     if($("s_payee")) $("s_payee").value = d.payee || "";
     if($("s_method")) $("s_method").value = d.method || "口座振込";
+    if($("s_date")) $("s_date").value = d.date || "";
   }
 
   if(d.type === "shuunyuu"){
@@ -356,16 +354,17 @@ function fillFormFromDraft_(d){
     if($("r_moku")) $("r_moku").value = d.moku || "";
     if($("r_setsu")) $("r_setsu").value = d.setsu || "";
     if($("r_title")) $("r_title").value = d.title || "";
-    if($("s_writer")) $("s_writer").value = d.writer || "";
+    if($("r_writer")) $("r_writer").value = d.writer || "";
     if($("r_content")) $("r_content").value = d.content || "";
     if($("r_amount")) $("r_amount").value = d.amount || "";
     if($("r_payer")) $("r_payer").value = d.payer || "";
     if($("r_method")) $("r_method").value = d.method || "口座振込";
+    if($("r_date")) $("r_date").value = d.date || "";
   }
 
   if(d.type === "ringi"){
     if($("g_title")) $("g_title").value = d.title || "";
-    if($("s_writer")) $("s_writer").value = d.writer || "";
+    if($("g_writer")) $("g_writer").value = d.writer || "";
     if($("g_content")) $("g_content").value = d.content || "";
   }
 
@@ -383,7 +382,7 @@ async function saveDraftByNo(){
     const payload = await buildPayload();
     payload.action = "saveDraft";
     payload.draftNo = no;
-    payload.attachments = []; // 下書きには添付を保存しない
+    payload.attachments = [];
 
     const data = await api_(payload);
 
@@ -514,3 +513,52 @@ window.addEventListener("load", async ()=>{
 
   await loadDraftsFromSheet();
 });
+  // 収入
+  if(type==="shuunyuu"){
+    return {
+      action:"submit",
+      type,
+      label:"収入行為",
+      seiriNo,
+      writer: v("r_writer"),
+      kou: v("r_kou"),
+      moku: v("r_moku"),
+      setsu: v("r_setsu"),
+      title: v("r_title"),
+      content: v("r_content"),
+      amount: v("r_amount"),
+      payer: v("r_payer"),
+      method: $("r_method").value || ""
+    };
+  }
+
+  // 稟議
+  const payload = {
+    action:"submit",
+    type,
+    label:"稟議行為",
+    seiriNo,
+    writer: v("g_writer"),
+    title: v("g_title"),
+    content: v("g_content"),
+    attachments:[]
+  };
+  // 収入
+  if(d.type==="shuunyuu"){
+    $("r_kou").value = d.kou || "";
+    $("r_moku").value = d.moku || "";
+    $("r_setsu").value = d.setsu || "";
+    $("r_title").value = d.r_title || "";
+    $("r_writer").value = d.writer || "";
+    $("r_content").value = d.r_content || "";
+    $("r_amount").value = d.amount || "";
+    $("r_payer").value = d.payer || "";
+    $("r_method").value = d.method || "口座振込";
+  }
+
+  // 稟議
+  if(d.type==="ringi"){
+    $("g_title").value = d.g_title || "";
+    $("g_writer").value = d.writer || "";
+    $("g_content").value = d.g_content || "";
+  } կարող եք全文修正してください

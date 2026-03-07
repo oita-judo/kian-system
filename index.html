@@ -40,7 +40,15 @@
 
       <div class="field">
         <label for="seiriNo">整理番号</label>
-        <input id="seiriNo" type="text" placeholder="例：1" required>
+        <input
+  id="seiriNo"
+  type="text"
+  placeholder="例：1"
+  inputmode="numeric"
+  pattern="[1-9][0-9]*"
+  maxlength="6"
+  required
+>
       </div>
     </div>
 

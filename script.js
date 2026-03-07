@@ -46,6 +46,9 @@ function validate(payload){
   if(payload.attachments.length > 5) return "添付PDFは5件までです";
   return "";
 }
+if(!/^[1-9][0-9]*$/.test(payload.seiriNo)){
+  return "整理番号は1以上の半角数字です（先頭0不可）";
+}
 
 // ================================
 // File -> DataURL

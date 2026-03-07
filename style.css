@@ -365,3 +365,43 @@ select:required:invalid{
   font-size:12px;
   border-radius:8px;
 }
+/* 添付ファイル横並び */
+.file-row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-top:10px;
+}
+
+/* ファイル選択を広げる */
+.file-row input[type=file]{
+  flex:1;
+}
+
+/* 追加ボタン */
+.addBtn{
+  background:#2563eb;
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.addBtn:hover{
+  background:#1d4ed8;
+}
+
+/* 削除ボタン */
+.deleteBtn{
+  background:#dc2626;
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
+.deleteBtn:hover{
+  background:#b91c1c;
+}

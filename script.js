@@ -1,6 +1,6 @@
 // ================================
 // script.js
-// 1件ずつ添付追加版
+// スプレッドシート下書き一覧・復元・削除対応版
 // ================================
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzbZsJ-VBpqwUkAkz73x9mUALE0CyBweSCE14uGw1bgCRqb8c6y08asj81ABJzYONKP4w/exec";
 
@@ -8,11 +8,11 @@ function $(id){ return document.getElementById(id); }
 function v(id){ return ($(id)?.value || "").trim(); }
 function setStatus(msg){ $("status").textContent = msg || ""; }
 
-// 1件ずつ追加した添付PDFを保持
 let selectedFiles = [];
+let draftItemsCache = [];
 
 // ================================
-// 区分切替
+// UI切替
 // ================================
 function applyTypeUI(){
   const t = $("type").value;
@@ -22,11 +22,27 @@ function applyTypeUI(){
 }
 
 // ================================
+// 整理番号制御
+// ================================
+function bindSeiriNoRule(){
+  const seiri = $("seiriNo");
+  if(!seiri) return;
+
+  seiri.addEventListener("input", function(){
+    this.value = this.value.replace(/[^0-9]/g, "");
+    this.value = this.value.replace(/^0+/, "");
+  });
+}
+
+// ================================
 // バリデーション
 // ================================
 function validate(payload){
   if(!payload.type) return "未入力：区分";
   if(!payload.seiriNo) return "未入力：整理番号";
+  if(!/^[1-9][0-9]*$/.test(payload.seiriNo)){
+    return "整理番号は1以上の半角数字です（先頭0不可）";
+  }
 
   if(payload.type === "shishutsu"){
     if(!payload.title) return "未入力：件名";
@@ -43,11 +59,26 @@ function validate(payload){
     if(!payload.content) return "未入力：内容";
   }
 
-  if(payload.attachments.length > 5) return "添付PDFは5件までです";
+  if(payload.attachments.length > 5) return "添付は5件までです";
   return "";
 }
-if(!/^[1-9][0-9]*$/.test(payload.seiriNo)){
-  return "整理番号は1以上の半角数字です（先頭0不可）";
+
+// ================================
+// API
+// ================================
+async function api_(payload){
+  const res = await fetch(GAS_URL, {
+    method: "POST",
+    headers: { "Content-Type":"text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
+  });
+
+  const text = await res.text();
+  try{
+    return JSON.parse(text);
+  }catch{
+    throw new Error("GASの応答がJSONではありません: " + text);
+  }
 }
 
 // ================================
@@ -63,8 +94,16 @@ function readFileAsDataURL(file){
 }
 
 // ================================
-// 添付ファイル表示
+// 添付表示
 // ================================
+function escapeHtml_(s){
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function renderSelectedFiles(){
   const box = $("fileList");
   if(!box) return;
@@ -95,16 +134,12 @@ function addSelectedFile(){
   const file = input?.files?.[0];
 
   if(!file){
-    setStatus("追加するPDFを選んでください。");
+    setStatus("追加するファイルを選んでください。");
     return;
   }
 
-  if(file.type !== "application/pdf"){
-
-  }
-
   if(selectedFiles.length >= 5){
-    setStatus("添付PDFは最大5件です。");
+    setStatus("添付は最大5件です。");
     input.value = "";
     return;
   }
@@ -134,33 +169,12 @@ function clearSelectedFiles(){
   setStatus("添付を全削除しました。");
 }
 
-// HTML表示用の最小エスケープ
-function escapeHtml_(s){
-  return String(s ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
 // ================================
-// 送信データ組み立て
+// 送信データ
 // ================================
 async function buildPayload(){
   const type = $("type").value;
-  const seiri = $("seiriNo");
-
-if(seiri){
-  seiri.addEventListener("input", function(){
-
-    // 数字以外削除
-    this.value = this.value.replace(/[^0-9]/g,"");
-
-    // 先頭0削除
-    this.value = this.value.replace(/^0+/,"");
-
-  });
-}
+  const seiriNo = $("seiriNo") ? $("seiriNo").value.trim() : "";
 
   const payload = {
     action: "submit",
@@ -198,14 +212,14 @@ if(seiri){
   }
 
   if(selectedFiles.length > 5){
-    throw new Error("PDFは5件までです");
+    throw new Error("添付は5件までです");
   }
 
   for (const file of selectedFiles) {
     const dataUrl = await readFileAsDataURL(file);
     payload.attachments.push({
       fileName: file.name,
-      mimeType: file.type,
+      mimeType: file.type || "application/octet-stream",
       dataUrl
     });
   }
@@ -237,19 +251,7 @@ async function send(){
       return;
     }
 
-    const res = await fetch(GAS_URL, {
-      method: "POST",
-      headers: { "Content-Type":"text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    });
-
-    const text = await res.text();
-    let data;
-    try{
-      data = JSON.parse(text);
-    }catch{
-      throw new Error("GASの応答がJSONではありません: " + text);
-    }
+    const data = await api_(payload);
 
     if(!data.ok){
       setStatus("失敗: " + (data.message || "unknown"));
@@ -261,17 +263,21 @@ async function send(){
       "整理番号: " + (data.seiriNo || "") + "\n" +
       "起案番号: " + (data.kianId || "") + "\n" +
       "起案書PDF: " + (data.pdfUrl || "") + "\n" +
-      "添付PDF件数: " + (data.attachmentCount ?? 0)
+      "添付件数: " + (data.attachmentCount ?? 0)
     );
 
+    // 下書き番号があれば draft を削除
     const no = draftNo_();
     if(no){
-      const drafts = readDrafts_();
-      if(drafts[no]){
-        delete drafts[no];
-        writeDrafts_(drafts);
-      }
+      try{
+        await api_({
+          action: "deleteDraft",
+          draftNo: no
+        });
+      }catch(e){}
     }
+
+    await loadDraftsFromSheet();
 
   }catch(err){
     setStatus("通信エラー: " + err);
@@ -286,6 +292,7 @@ async function send(){
 function clearForm(){
   if($("type")) $("type").value = "";
   if($("seiriNo")) $("seiriNo").value = "";
+  if($("draftNo")) $("draftNo").value = "";
 
   [
     "s_kou","s_moku","s_setsu","s_title","s_content","s_amount","s_payee",
@@ -307,176 +314,220 @@ function clearForm(){
 }
 
 // ================================
-// 下書き
+// 下書き保存・復元・削除
 // ================================
-const DRAFTS_KEY = "kian_drafts_multi_v8";
-
-function draftNo_(){ return v("draftNo"); }
-
-function readDrafts_(){
-  const raw = localStorage.getItem(DRAFTS_KEY);
-  if(!raw) return {};
-  try{ return JSON.parse(raw); }catch{ return {}; }
+function draftNo_(){
+  return v("draftNo");
 }
 
-function writeDrafts_(obj){
-  localStorage.setItem(DRAFTS_KEY, JSON.stringify(obj));
+function typeLabelJa_(t){
+  if(t === "shishutsu") return "支出";
+  if(t === "shuunyuu") return "収入";
+  return "稟議";
 }
 
-function getDraftDataNow_(){
-  const type = $("type").value;
-  const base = {
-    type,
-    seiriNo: v("seiriNo"),
-    savedAt: new Date().toISOString()
-  };
-
-  if(type === "shishutsu"){
-    return {
-      ...base,
-      s_kou:v("s_kou"),
-      s_moku:v("s_moku"),
-      s_setsu:v("s_setsu"),
-      s_title:v("s_title"),
-      s_content:v("s_content"),
-      s_amount:v("s_amount"),
-      s_payee:v("s_payee"),
-      s_method:$("s_method").value || ""
-    };
-  }
-
-  if(type === "shuunyuu"){
-    return {
-      ...base,
-      r_kou:v("r_kou"),
-      r_moku:v("r_moku"),
-      r_setsu:v("r_setsu"),
-      r_title:v("r_title"),
-      r_content:v("r_content"),
-      r_amount:v("r_amount"),
-      r_payer:v("r_payer"),
-      r_method:$("r_method").value || ""
-    };
-  }
-
-  return {
-    ...base,
-    g_title:v("g_title"),
-    g_content:v("g_content")
-  };
-}
-
-function applyDraftData_(d){
+function fillFormFromDraft_(d){
   if(!d) return;
 
-  if(d.type){
-    $("type").value = d.type;
-    applyTypeUI();
-  }
+  clearForm();
+
+  if($("draftNo")) $("draftNo").value = d.draftNo || "";
   if($("seiriNo")) $("seiriNo").value = d.seiriNo || "";
+  if($("type")) $("type").value = d.type || "";
+  applyTypeUI();
 
   if(d.type === "shishutsu"){
-    $("s_kou").value = d.s_kou || "";
-    $("s_moku").value = d.s_moku || "";
-    $("s_setsu").value = d.s_setsu || "";
-    $("s_title").value = d.s_title || "";
-    $("s_content").value = d.s_content || "";
-    $("s_amount").value = d.s_amount || "";
-    $("s_payee").value = d.s_payee || "";
-    $("s_method").value = d.s_method || "口座振込";
-  } else if(d.type === "shuunyuu"){
-    $("r_kou").value = d.r_kou || "";
-    $("r_moku").value = d.r_moku || "";
-    $("r_setsu").value = d.r_setsu || "";
-    $("r_title").value = d.r_title || "";
-    $("r_content").value = d.r_content || "";
-    $("r_amount").value = d.r_amount || "";
-    $("r_payer").value = d.r_payer || "";
-    $("r_method").value = d.r_method || "口座振込";
-  } else {
-    $("g_title").value = d.g_title || "";
-    $("g_content").value = d.g_content || "";
-  }
-}
-
-function renderDraftList(){
-  const box = $("draftList");
-  const drafts = readDrafts_();
-  const keys = Object.keys(drafts);
-
-  if(keys.length === 0){
-    box.textContent = "（下書きはありません）";
-    return;
+    if($("s_kou")) $("s_kou").value = d.kou || "";
+    if($("s_moku")) $("s_moku").value = d.moku || "";
+    if($("s_setsu")) $("s_setsu").value = d.setsu || "";
+    if($("s_title")) $("s_title").value = d.title || "";
+    if($("s_content")) $("s_content").value = d.content || "";
+    if($("s_amount")) $("s_amount").value = d.amount || "";
+    if($("s_payee")) $("s_payee").value = d.payee || "";
+    if($("s_method")) $("s_method").value = d.method || "口座振込";
   }
 
-  keys.sort((a,b)=> (drafts[b]?.savedAt || "").localeCompare(drafts[a]?.savedAt || ""));
+  if(d.type === "shuunyuu"){
+    if($("r_kou")) $("r_kou").value = d.kou || "";
+    if($("r_moku")) $("r_moku").value = d.moku || "";
+    if($("r_setsu")) $("r_setsu").value = d.setsu || "";
+    if($("r_title")) $("r_title").value = d.title || "";
+    if($("r_content")) $("r_content").value = d.content || "";
+    if($("r_amount")) $("r_amount").value = d.amount || "";
+    if($("r_payer")) $("r_payer").value = d.payer || "";
+    if($("r_method")) $("r_method").value = d.method || "口座振込";
+  }
 
-  const typeLabel = t => t === "shishutsu" ? "支出" : t === "shuunyuu" ? "収入" : "稟議";
+  if(d.type === "ringi"){
+    if($("g_title")) $("g_title").value = d.title || "";
+    if($("g_content")) $("g_content").value = d.content || "";
+  }
 
-  box.textContent = keys.map(k=>{
-    const d = drafts[k] || {};
-    const at = (d.savedAt || "").replace("T"," ").slice(0,19);
-    const title =
-      d.type === "shishutsu" ? (d.s_title || "") :
-      d.type === "shuunyuu" ? (d.r_title || "") :
-      (d.g_title || "");
-    return `#${k}  ${at}  [${typeLabel(d.type)}] No:${d.seiriNo || ""}  ${String(title).slice(0,24)}`;
-  }).join("\n");
+  setStatus(`下書きを復元しました（番号：${d.draftNo || ""}）`);
 }
 
-function saveDraftByNo(){
+async function saveDraftByNo(){
   const no = draftNo_();
   if(!no){
     setStatus("下書き番号を入力してください。");
     return;
   }
-  const drafts = readDrafts_();
-  drafts[no] = getDraftDataNow_();
-  writeDrafts_(drafts);
-  setStatus(`下書きを保存しました（番号：${no}）`);
+
+  try{
+    const payload = await buildPayload();
+    payload.action = "saveDraft";
+    payload.draftNo = no;
+    payload.attachments = []; // 下書きには添付を含めない
+
+    const data = await api_(payload);
+
+    if(!data.ok){
+      setStatus("下書き保存失敗: " + (data.message || "unknown"));
+      return;
+    }
+
+    setStatus(`下書きをスプレッドシートに保存しました（番号：${no}）`);
+    await loadDraftsFromSheet();
+  }catch(err){
+    setStatus("下書き保存エラー: " + err);
+  }
 }
 
-function loadDraftByNo(){
+async function loadDraftByNo(){
   const no = draftNo_();
   if(!no){
     setStatus("下書き番号を入力してください。");
     return;
   }
-  const drafts = readDrafts_();
-  if(!drafts[no]){
+
+  if(draftItemsCache.length === 0){
+    await loadDraftsFromSheet();
+  }
+
+  const item = draftItemsCache.find(d => String(d.draftNo) === String(no));
+  if(!item){
     setStatus(`その番号の下書きがありません（番号：${no}）`);
     return;
   }
-  applyDraftData_(drafts[no]);
-  setStatus(`下書きを復元しました（番号：${no}）`);
+
+  fillFormFromDraft_(item);
 }
 
-function deleteDraftByNo(){
+async function deleteDraftByNo(){
   const no = draftNo_();
   if(!no){
     setStatus("下書き番号を入力してください。");
     return;
   }
-  const drafts = readDrafts_();
-  if(!drafts[no]){
-    setStatus(`その番号の下書きがありません（番号：${no}）`);
-    return;
-  }
+
   if(!confirm(`下書き（番号：${no}）を削除しますか？`)) return;
 
-  delete drafts[no];
-  writeDrafts_(drafts);
-  setStatus(`下書きを削除しました（番号：${no}）`);
-  $("draftList").textContent = "";
+  try{
+    const data = await api_({
+      action: "deleteDraft",
+      draftNo: no
+    });
+
+    if(!data.ok){
+      setStatus("下書き削除失敗: " + (data.message || "unknown"));
+      return;
+    }
+
+    setStatus(`下書きを削除しました（番号：${no}）`);
+    await loadDraftsFromSheet();
+  }catch(err){
+    setStatus("下書き削除エラー: " + err);
+  }
+}
+
+// ================================
+// 下書き一覧（シート）
+// ================================
+function renderDraftsFromSheet(items){
+  const box = $("draftSheetList");
+  if(!box) return;
+
+  draftItemsCache = Array.isArray(items) ? items : [];
+
+  if(draftItemsCache.length === 0){
+    box.innerHTML = "（下書きはありません）";
+    return;
+  }
+
+  box.innerHTML = draftItemsCache.map((d, i) => `
+    <div class="sheetDraftCard">
+      <div class="sheetDraftMeta">
+        <span>下書き番号: ${escapeHtml_(d.draftNo || "")}</span>
+        <span>区分: ${escapeHtml_(d.typeLabel || typeLabelJa_(d.type))}</span>
+        <span>整理番号: ${escapeHtml_(d.seiriNo || "")}</span>
+        <span>更新: ${escapeHtml_(d.updatedAt || d.createdAt || "")}</span>
+      </div>
+      <div class="sheetDraftTitleText">${escapeHtml_(d.title || "（件名なし）")}</div>
+      <div class="sheetDraftButtons">
+        <button type="button" class="miniBtn miniPrimary" onclick="restoreDraftFromList(${i})">復元</button>
+        <button type="button" class="miniBtn miniDanger" onclick="deleteDraftFromList(${i})">削除</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function loadDraftsFromSheet(){
+  const box = $("draftSheetList");
+  if(box) box.textContent = "読み込み中...";
+
+  try{
+    const data = await api_({
+      action: "listDrafts"
+    });
+
+    if(!data.ok){
+      if(box) box.textContent = "読み込み失敗";
+      return;
+    }
+
+    renderDraftsFromSheet(data.items || []);
+  }catch(err){
+    if(box) box.textContent = "読み込み失敗";
+    console.error(err);
+  }
+}
+
+function restoreDraftFromList(index){
+  const item = draftItemsCache[index];
+  if(!item) return;
+  fillFormFromDraft_(item);
+}
+
+async function deleteDraftFromList(index){
+  const item = draftItemsCache[index];
+  if(!item) return;
+
+  if(!confirm(`下書き（番号：${item.draftNo}）を削除しますか？`)) return;
+
+  try{
+    const data = await api_({
+      action: "deleteDraft",
+      draftNo: item.draftNo
+    });
+
+    if(!data.ok){
+      setStatus("下書き削除失敗: " + (data.message || "unknown"));
+      return;
+    }
+
+    setStatus(`下書きを削除しました（番号：${item.draftNo}）`);
+    await loadDraftsFromSheet();
+  }catch(err){
+    setStatus("下書き削除エラー: " + err);
+  }
 }
 
 // ================================
 // 初期化
 // ================================
-window.addEventListener("load", ()=>{
+window.addEventListener("load", async ()=>{
   applyTypeUI();
-
-  if($("draftList")) $("draftList").textContent = "";
+  bindSeiriNoRule();
   renderSelectedFiles();
 
   $("type").addEventListener("change", applyTypeUI);
@@ -486,8 +537,10 @@ window.addEventListener("load", ()=>{
   $("saveDraftBtn").addEventListener("click", saveDraftByNo);
   $("loadDraftBtn").addEventListener("click", loadDraftByNo);
   $("deleteDraftBtn").addEventListener("click", deleteDraftByNo);
-  $("listDraftBtn").addEventListener("click", renderDraftList);
+  $("listDraftBtn").addEventListener("click", loadDraftsFromSheet);
 
   if($("addFileBtn")) $("addFileBtn").addEventListener("click", addSelectedFile);
   if($("clearFilesBtn")) $("clearFilesBtn").addEventListener("click", clearSelectedFiles);
+
+  await loadDraftsFromSheet();
 });

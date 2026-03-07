@@ -146,17 +146,25 @@
     </div>
 
     <!-- 添付PDF：1件ずつ追加 -->
-    <label for="fileOne">添付PDF（最大5）</label>
-    <input id="fileOne" type="file">
+    <div class="file-row">
 
-    <div class="help">ファイル添付（最大5） / 1件ずつ追加</div>
+  <input id="fileOne" type="file">
 
-    <div class="file-add-row">
-      <button id="addFileBtn" type="button" class="secondary">添付を追加</button>
-      <button id="clearFilesBtn" type="button" class="secondary">添付を全削除</button>
-    </div>
+  <button id="addFileBtn" type="button" class="addBtn">
+    添付を追加
+  </button>
 
-    <ul id="fileList" class="fileList"></ul>
+  <button id="clearFilesBtn" type="button" class="deleteBtn">
+    添付を全削除
+  </button>
+
+</div>
+
+<div class="help">
+ファイル添付（最大5） / 1件ずつ追加
+</div>
+
+<ul id="fileList" class="fileList"></ul>
 
     <!-- 操作 -->
     <div class="action-row">

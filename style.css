@@ -53,7 +53,9 @@ input, textarea, select{
   outline:none;
 }
 
-textarea{ resize:vertical; }
+textarea{
+  resize:vertical;
+}
 
 input:focus, textarea:focus, select:focus{
   border-color:#9ca3af;
@@ -110,29 +112,23 @@ select:required:invalid{
   background:#fff5f5 !important;
 }
 
-/* 下書きエリア全体 */
+/* 下書きレイアウト */
 .draft-layout{
   display:grid;
-  grid-template-columns: 360px minmax(0, 1fr);
+  grid-template-columns:360px minmax(0, 1fr);
   gap:20px;
   align-items:start;
   margin-bottom:16px;
 }
 
-/* 左 */
-.draft-left{
-  min-width:0;
-}
-
-/* 右 */
+.draft-left,
 .draft-right{
   min-width:0;
 }
 
-/* 左上の3つを横並び固定 */
 .draft-tools{
   display:grid;
-  grid-template-columns: 100px 130px 130px;
+  grid-template-columns:100px 130px 130px;
   gap:10px;
   align-items:center;
   justify-content:start;
@@ -140,14 +136,18 @@ select:required:invalid{
 
 .draft-tools input{
   width:100px;
+  height:42px;
+  margin:0;
 }
 
 .draft-tools button{
   width:130px;
   height:42px;
+  padding:0 10px;
+  font-size:14px;
+  margin:0;
 }
 
-/* 下書き説明 */
 .draft-note{
   margin-top:10px;
   font-size:12px;
@@ -155,7 +155,13 @@ select:required:invalid{
   line-height:1.5;
 }
 
-/* 右側一覧 */
+.listBtn{
+  background:#d1d5db !important;
+  color:#111827 !important;
+  border:1px solid #c3c8d0 !important;
+}
+
+/* 下書き一覧 */
 .sheetDraftArea{
   margin:0;
   padding:12px;
@@ -174,7 +180,6 @@ select:required:invalid{
   gap:10px;
 }
 
-/* 一覧表 */
 .draftTable{
   display:grid;
   gap:6px;
@@ -182,7 +187,7 @@ select:required:invalid{
 
 .draftHead{
   display:grid;
-  grid-template-columns: 70px 90px 90px 1fr 170px 110px;
+  grid-template-columns:70px 90px 90px 1fr 170px 110px;
   font-size:12px;
   font-weight:600;
   padding:6px 8px;
@@ -191,7 +196,7 @@ select:required:invalid{
 
 .draftRow{
   display:grid;
-  grid-template-columns: 70px 90px 90px 1fr 170px 110px;
+  grid-template-columns:70px 90px 90px 1fr 170px 110px;
   align-items:center;
   gap:8px;
   padding:8px;
@@ -229,37 +234,6 @@ select:required:invalid{
   border:none;
 }
 
-/* 下書き一覧ボタン */
-.listBtn{
-  background:#d1d5db !important;
-  color:#111827 !important;
-  border:1px solid #c3c8d0 !important;
-}
-
-/* 画面が狭いときだけ縦並び */
-@media (max-width: 1000px){
-  .draft-layout{
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 700px){
-  .draft-tools{
-    grid-template-columns: 1fr;
-  }
-
-  .draftHead,
-  .draftRow{
-    grid-template-columns: 60px 80px 80px 1fr;
-  }
-
-  .draftHead > div:nth-child(5),
-  .draftHead > div:nth-child(6),
-  .draftRow > div:nth-child(5),
-  .draftRow > div:nth-child(6){
-    display:none;
-  }
-}
 /* 区分＋整理番号 */
 .type-seiri-row{
   display:grid;
@@ -271,6 +245,7 @@ select:required:invalid{
   margin-top:0;
 }
 
+/* 3列 */
 .triple{
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
@@ -280,6 +255,43 @@ select:required:invalid{
 
 .triple .field label{
   margin-top:0;
+}
+
+/* 4列 */
+.quad{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
+  gap:10px;
+  margin-top:10px;
+}
+
+.quad .field label{
+  margin-top:0;
+}
+
+/* 件名＋記載者 */
+.title-row{
+  display:flex !important;
+  gap:16px;
+  align-items:flex-end;
+  margin-top:10px;
+}
+
+.title-row > .field:first-child{
+  flex:1;
+}
+
+.title-row > .field:last-child{
+  width:220px;
+  flex:0 0 220px;
+}
+
+.title-row .field{
+  min-width:0;
+}
+
+.title-row input{
+  width:100%;
 }
 
 /* 添付 */
@@ -345,6 +357,7 @@ select:required:invalid{
   align-items:center;
   gap:14px;
   margin-top:16px;
+  flex-wrap:wrap;
 }
 
 /* 承認画面用 */
@@ -480,17 +493,6 @@ select:required:invalid{
   margin-top:12px;
 }
 
-.title-row{
-  display:grid;
-  grid-template-columns: 1fr 220px;
-  gap:16px;
-  align-items:end;
-}
-
-.title-row input{
-  width:100%;
-}
-
 @media (max-width:1100px){
   .draft-layout{
     grid-template-columns:1fr;
@@ -515,8 +517,15 @@ select:required:invalid{
   .title-row,
   .type-seiri-row,
   .triple,
+  .quad,
   .twoApprovers{
     grid-template-columns:1fr;
+    display:grid !important;
+  }
+
+  .title-row > .field:last-child{
+    width:auto;
+    flex:auto;
   }
 
   .draft-tools{
@@ -525,5 +534,9 @@ select:required:invalid{
 
   .pdfFrame{
     height:360px;
+  }
+
+  .status{
+    white-space:normal;
   }
 }

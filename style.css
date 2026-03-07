@@ -21,7 +21,7 @@ body{
 }
 
 .container{
-  max-width:1000px;
+  max-width:1200px;
   margin:0 auto;
   background:var(--card);
   border:1px solid var(--line);
@@ -110,22 +110,36 @@ select:required:invalid{
   background:#fff5f5 !important;
 }
 
-.draft-row{
+/* 下書き左右レイアウト */
+.draft-layout{
   display:grid;
-  grid-template-columns:120px 1fr 1fr 1fr 1fr;
+  grid-template-columns:420px 1fr;
+  gap:16px;
+  align-items:start;
+  margin-bottom:16px;
+}
+
+.draft-left,
+.draft-right{
+  min-width:0;
+}
+
+.compact-draft-row{
+  display:grid;
+  grid-template-columns:110px 1fr 1fr;
   gap:10px;
   align-items:center;
 }
 
-.draft-row input,
-.draft-row button{
-  height:46px;
+.compact-draft-row input,
+.compact-draft-row button{
+  height:42px;
   margin-top:0;
 }
 
-.draft-row button{
-  width:100%;
-  padding:0 12px;
+.compact-draft-row button{
+  padding:0 10px;
+  font-size:14px;
 }
 
 .listBtn{
@@ -140,17 +154,78 @@ select:required:invalid{
   color:var(--muted);
 }
 
-.draftList{
+/* 下書き一覧 */
+.sheetDraftArea{
+  margin:0;
+  padding:12px;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
   background:#fafafa;
-  border:1px solid var(--line);
-  border-radius:12px;
-  padding:10px 12px;
-  margin-top:10px;
-  min-height:42px;
-  white-space:pre-wrap;
-  font-size:12px;
 }
 
+.sheetDraftTitle{
+  font-weight:700;
+  margin-bottom:8px;
+}
+
+.sheetDraftList{
+  display:grid;
+  gap:10px;
+}
+
+.draftTable{
+  display:grid;
+  gap:6px;
+}
+
+.draftHead{
+  display:grid;
+  grid-template-columns:70px 90px 90px 1fr 160px 120px;
+  font-size:12px;
+  font-weight:600;
+  padding:6px 8px;
+  color:var(--muted);
+}
+
+.draftRow{
+  display:grid;
+  grid-template-columns:70px 90px 90px 1fr 160px 120px;
+  align-items:center;
+  padding:8px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#fff;
+  font-size:13px;
+}
+
+.draftTitle{
+  font-weight:600;
+}
+
+.draftBtns{
+  display:flex;
+  gap:6px;
+}
+
+.miniBtn{
+  padding:4px 8px;
+  font-size:12px;
+  border-radius:6px;
+}
+
+.miniPrimary{
+  background:#111827;
+  color:#fff;
+  border:none;
+}
+
+.miniDanger{
+  background:#dc2626;
+  color:#fff;
+  border:none;
+}
+
+/* 区分＋整理番号 */
 .type-seiri-row{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -172,6 +247,64 @@ select:required:invalid{
   margin-top:0;
 }
 
+/* 添付 */
+.file-row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+
+.file-row input[type=file]{
+  flex:1;
+  min-width:260px;
+}
+
+.addBtn{
+  background:#2563eb;
+  color:#fff;
+  border:none;
+}
+
+.addBtn:hover{
+  background:#1d4ed8;
+}
+
+.deleteBtn{
+  background:#dc2626;
+  color:#fff;
+  border:none;
+}
+
+.deleteBtn:hover{
+  background:#b91c1c;
+}
+
+.fileList{
+  margin:10px 0 0;
+  padding-left:20px;
+  font-size:13px;
+}
+
+.fileList li{
+  margin-bottom:6px;
+}
+
+.fileItemRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.fileRemoveBtn{
+  padding:4px 10px;
+  font-size:12px;
+  border-radius:8px;
+}
+
+/* 操作 */
 .action-row{
   display:flex;
   gap:10px;
@@ -179,6 +312,7 @@ select:required:invalid{
   margin-top:16px;
 }
 
+/* 承認画面用 */
 .cards{
   display:grid;
   gap:16px;
@@ -236,51 +370,6 @@ select:required:invalid{
   font-size:12px;
 }
 
-.pdfWrap{
-  margin-top:12px;
-}
-
-
-.attachItem{
-  margin-top:12px;
-  padding-top:10px;
-  border-top:1px dashed var(--line2);
-}
-
-
-
-.twoApprovers{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-  margin-top:14px;
-}
-
-.approverBox{
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:12px;
-  background:#fff;
-}
-
-.approveBtn{
-  width:100%;
-  margin-top:12px;
-}
-
-
-@media (max-width:700px){
-  .draft-row,
-  .type-seiri-row,
-  .triple,
-  .twoApprovers{
-    grid-template-columns:1fr;
-  }
-
-  .pdfFrame{
-    height:360px;
-  }
-}
 .pdfGrid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
@@ -336,72 +425,55 @@ select:required:invalid{
   color:var(--muted);
   margin-bottom:6px;
 }
-.file-add-row{
-  display:flex;
-  gap:10px;
-  margin-top:10px;
-  flex-wrap:wrap;
-}
 
-.fileList{
-  margin:10px 0 0;
-  padding-left:20px;
-  font-size:13px;
-}
-
-.fileList li{
-  margin-bottom:6px;
-}
-
-.fileItemRow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-}
-
-.fileRemoveBtn{
-  padding:4px 10px;
-  font-size:12px;
-  border-radius:8px;
-}
-/* 添付ファイル横並び */
-.file-row{
-  display:flex;
+.twoApprovers{
+  display:grid;
+  grid-template-columns:1fr 1fr;
   gap:12px;
-  align-items:center;
-  margin-top:10px;
+  margin-top:14px;
 }
 
-/* ファイル選択を広げる */
-.file-row input[type=file]{
-  flex:1;
+.approverBox{
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px;
+  background:#fff;
 }
 
-/* 追加ボタン */
-.addBtn{
-  background:#2563eb;
-  color:white;
-  border:none;
-  padding:10px 14px;
-  border-radius:10px;
-  cursor:pointer;
+.approveBtn{
+  width:100%;
+  margin-top:12px;
 }
 
-.addBtn:hover{
-  background:#1d4ed8;
+@media (max-width:1100px){
+  .draft-layout{
+    grid-template-columns:1fr;
+  }
 }
 
-/* 削除ボタン */
-.deleteBtn{
-  background:#dc2626;
-  color:white;
-  border:none;
-  padding:10px 14px;
-  border-radius:10px;
-  cursor:pointer;
+@media (max-width:900px){
+  .draftHead,
+  .draftRow{
+    grid-template-columns:60px 80px 80px 1fr;
+  }
+
+  .draftHead > div:nth-child(5),
+  .draftHead > div:nth-child(6),
+  .draftRow > div:nth-child(5),
+  .draftRow > div:nth-child(6){
+    display:none;
+  }
 }
 
-.deleteBtn:hover{
-  background:#b91c1c;
+@media (max-width:700px){
+  .compact-draft-row,
+  .type-seiri-row,
+  .triple,
+  .twoApprovers{
+    grid-template-columns:1fr;
+  }
+
+  .pdfFrame{
+    height:360px;
+  }
 }

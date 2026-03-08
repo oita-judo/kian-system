@@ -1,11 +1,8 @@
 // ================================
 // script.js
-// 下書き一覧表形式・復元・削除対応版
-// 共通入力欄対応版
-// s_date / r_date → GASには date で送信
+// 起案画面 完成版
 // ================================
-
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwgSUeNNjd7wTPQOWoj_1Kb_mu4UiLmysxe5yoHbj2jt3axQ55Yx2oFZ7LiTcCWesGX3w/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwdXfLyVByUKJQOey9gbq7_Ra2lvzUu6nDwIbX1HFIUfWNsI7Gp4IbsjKiPpe93j_bd7g/exec";
 
 function $(id) {
   return document.getElementById(id);
@@ -22,6 +19,8 @@ function setStatus(msg) {
 
 let selectedFiles = [];
 let draftItemsCache = [];
+let returnedItemsCache = [];
+let approvedItemsCache = [];
 
 // ================================
 // 共通欄 → hidden同期
@@ -280,6 +279,31 @@ async function buildPayload() {
 }
 
 // ================================
+// 差し戻し表示
+// ================================
+function showReturnComments(d) {
+  const box = $("returnBox");
+  const a = $("returnCommentA");
+  const b = $("returnCommentB");
+
+  if (!box || !a || !b) return;
+
+  const textA = (d && (d.returnCommentA || d.draftCommentA || "")) ? (d.returnCommentA || d.draftCommentA) : "";
+  const textB = (d && (d.returnCommentB || d.draftCommentB || "")) ? (d.returnCommentB || d.draftCommentB) : "";
+
+  if (!textA && !textB) {
+    box.style.display = "none";
+    a.textContent = "なし";
+    b.textContent = "なし";
+    return;
+  }
+
+  box.style.display = "";
+  a.textContent = textA || "なし";
+  b.textContent = textB || "なし";
+}
+
+// ================================
 // 送信
 // ================================
 function setSending(flag) {
@@ -401,7 +425,8 @@ function fillFormFromDraft_(d) {
     if ($("r_method")) $("r_method").value = d.method || "口座振込";
     if ($("r_date")) $("r_date").value = d.date || "";
   }
-　showReturnComments(d);
+
+  showReturnComments(d);
   setStatus(`下書きを復元しました（番号：${d.draftNo || ""}）`);
 }
 
@@ -435,16 +460,14 @@ async function saveDraftByNo() {
 }
 
 // ================================
-// 下書き一覧
+// 状態別一覧
 // ================================
-function renderDraftsFromSheet(items) {
-  const box = $("draftSheetList");
+function renderStatusTable(listId, items, mode) {
+  const box = $(listId);
   if (!box) return;
 
-  draftItemsCache = Array.isArray(items) ? items : [];
-
-  if (draftItemsCache.length === 0) {
-    box.innerHTML = "（下書きはありません）";
+  if (!items || items.length === 0) {
+    box.innerHTML = "（データはありません）";
     return;
   }
 
@@ -459,16 +482,24 @@ function renderDraftsFromSheet(items) {
         <div></div>
       </div>
 
-      ${draftItemsCache.map((d, i) => `
+      ${items.map((d, i) => `
         <div class="draftRow">
-          <div>${escapeHtml_(d.draftNo || "")}</div>
+          <div>${escapeHtml_(d.draftNo || d.kianId || "")}</div>
           <div>${escapeHtml_(d.typeLabel || typeLabelJa_(d.type))}</div>
           <div>${escapeHtml_(d.seiriNo || "")}</div>
           <div class="draftTitle">${escapeHtml_(d.title || "(件名なし)")}</div>
           <div>${escapeHtml_(d.updatedAt || d.createdAt || "")}</div>
           <div class="draftBtns">
-            <button class="miniBtn miniPrimary" onclick="restoreDraftFromList(${i})">復元</button>
-            <button class="miniBtn miniDanger" onclick="deleteDraftFromList(${i})">削除</button>
+            ${
+              mode === "approved"
+                ? ""
+                : `<button class="miniBtn miniPrimary" onclick="restoreItemByStatus('${mode}', ${i})">復元</button>`
+            }
+            ${
+              mode === "draft"
+                ? `<button class="miniBtn miniDanger" onclick="deleteDraftByStatus(${i})">削除</button>`
+                : ""
+            }
           </div>
         </div>
       `).join("")}
@@ -477,35 +508,58 @@ function renderDraftsFromSheet(items) {
 }
 
 async function loadDraftsFromSheet() {
-  const box = $("draftSheetList");
-  if (box) box.textContent = "読み込み中...";
+  const draftBox = $("draftSheetList");
+  const returnedBox = $("returnedSheetList");
+  const approvedBox = $("approvedSheetList");
+
+  if (draftBox) draftBox.textContent = "読み込み中...";
+  if (returnedBox) returnedBox.textContent = "読み込み中...";
+  if (approvedBox) approvedBox.textContent = "読み込み中...";
 
   try {
     const data = await api_({
-      action: "listDrafts"
+      action: "listAllStatuses"
     });
 
     if (!data.ok) {
-      if (box) box.textContent = "読み込み失敗";
+      if (draftBox) draftBox.textContent = "読み込み失敗";
+      if (returnedBox) returnedBox.textContent = "読み込み失敗";
+      if (approvedBox) approvedBox.textContent = "読み込み失敗";
       return;
     }
 
-    renderDraftsFromSheet(data.items || []);
+    draftItemsCache = data.draftItems || [];
+    returnedItemsCache = data.returnedItems || [];
+    approvedItemsCache = data.approvedItems || [];
+
+    if ($("countDraft")) $("countDraft").textContent = draftItemsCache.length;
+    if ($("countReturned")) $("countReturned").textContent = returnedItemsCache.length;
+    if ($("countApproved")) $("countApproved").textContent = approvedItemsCache.length;
+
+    renderStatusTable("draftSheetList", draftItemsCache, "draft");
+    renderStatusTable("returnedSheetList", returnedItemsCache, "returned");
+    renderStatusTable("approvedSheetList", approvedItemsCache, "approved");
 
   } catch (err) {
-    if (box) box.textContent = "読み込み失敗";
+    if (draftBox) draftBox.textContent = "読み込み失敗";
+    if (returnedBox) returnedBox.textContent = "読み込み失敗";
+    if (approvedBox) approvedBox.textContent = "読み込み失敗";
     console.error(err);
   }
 }
 
-function restoreDraftFromList(index) {
-  const item = draftItemsCache[index];
+function restoreItemByStatus(mode, index) {
+  let item = null;
+
+  if (mode === "draft") item = draftItemsCache[index];
+  if (mode === "returned") item = returnedItemsCache[index];
+
   if (!item) return;
   fillFormFromDraft_(item);
 }
-window.restoreDraftFromList = restoreDraftFromList;
+window.restoreItemByStatus = restoreItemByStatus;
 
-async function deleteDraftFromList(index) {
+async function deleteDraftByStatus(index) {
   const item = draftItemsCache[index];
   if (!item) return;
 
@@ -524,12 +578,11 @@ async function deleteDraftFromList(index) {
 
     setStatus(`下書きを削除しました（番号：${item.draftNo}）`);
     await loadDraftsFromSheet();
-
   } catch (err) {
     setStatus("下書き削除エラー: " + err);
   }
 }
-window.deleteDraftFromList = deleteDraftFromList;
+window.deleteDraftByStatus = deleteDraftByStatus;
 
 // ================================
 // 初期化
@@ -544,7 +597,35 @@ window.addEventListener("load", async () => {
   if ($("clearBtn")) $("clearBtn").addEventListener("click", clearForm);
 
   if ($("saveDraftBtn")) $("saveDraftBtn").addEventListener("click", saveDraftByNo);
-  if ($("listDraftBtn")) $("listDraftBtn").addEventListener("click", loadDraftsFromSheet);
+  if ($("listDraftBtn")) $("listDraftBtn").addEventListener("click", () => {
+    const box = $("draftListWrap");
+    if (!box) return;
+    box.style.display = (box.style.display === "none" ? "" : "none");
+  });
+
+  if ($("btnToggleDraftListSummary")) {
+    $("btnToggleDraftListSummary").addEventListener("click", () => {
+      const box = $("draftListWrap");
+      if (!box) return;
+      box.style.display = (box.style.display === "none" ? "" : "none");
+    });
+  }
+
+  if ($("btnToggleReturnedList")) {
+    $("btnToggleReturnedList").addEventListener("click", () => {
+      const box = $("returnedListWrap");
+      if (!box) return;
+      box.style.display = (box.style.display === "none" ? "" : "none");
+    });
+  }
+
+  if ($("btnToggleApprovedList")) {
+    $("btnToggleApprovedList").addEventListener("click", () => {
+      const box = $("approvedListWrap");
+      if (!box) return;
+      box.style.display = (box.style.display === "none" ? "" : "none");
+    });
+  }
 
   if ($("addFileBtn")) $("addFileBtn").addEventListener("click", addSelectedFile);
   if ($("clearFilesBtn")) $("clearFilesBtn").addEventListener("click", clearSelectedFiles);
@@ -553,26 +634,6 @@ window.addEventListener("load", async () => {
     if ($(id)) $(id).addEventListener("input", syncCommonToHiddenFields);
   });
 
+  showReturnComments(null);
   await loadDraftsFromSheet();
 });
-function showReturnComments(d) {
-  const box = $("returnBox");
-  const a = $("returnCommentA");
-  const b = $("returnCommentB");
-
-  if (!box || !a || !b) return;
-
-  const textA = (d && (d.returnCommentA || d.draftCommentA || "")) ? (d.returnCommentA || d.draftCommentA) : "";
-  const textB = (d && (d.returnCommentB || d.draftCommentB || "")) ? (d.returnCommentB || d.draftCommentB) : "";
-
-  if (!textA && !textB) {
-    box.style.display = "none";
-    a.textContent = "なし";
-    b.textContent = "なし";
-    return;
-  }
-
-  box.style.display = "";
-  a.textContent = textA || "なし";
-  b.textContent = textB || "なし";
-}

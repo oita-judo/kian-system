@@ -5,7 +5,7 @@
 // s_date / r_date → GASには date で送信
 // ================================
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwdXfLyVByUKJQOey9gbq7_Ra2lvzUu6nDwIbX1HFIUfWNsI7Gp4IbsjKiPpe93j_bd7g/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwgSUeNNjd7wTPQOWoj_1Kb_mu4UiLmysxe5yoHbj2jt3axQ55Yx2oFZ7LiTcCWesGX3w/exec";
 
 function $(id) {
   return document.getElementById(id);

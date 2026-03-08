@@ -554,3 +554,24 @@ window.addEventListener("load", async () => {
 
   await loadDraftsFromSheet();
 });
+function showReturnComments(d) {
+  const box = $("returnBox");
+  const a = $("returnCommentA");
+  const b = $("returnCommentB");
+
+  if (!box || !a || !b) return;
+
+  const textA = (d && (d.returnCommentA || d.draftCommentA || "")) ? (d.returnCommentA || d.draftCommentA) : "";
+  const textB = (d && (d.returnCommentB || d.draftCommentB || "")) ? (d.returnCommentB || d.draftCommentB) : "";
+
+  if (!textA && !textB) {
+    box.style.display = "none";
+    a.textContent = "なし";
+    b.textContent = "なし";
+    return;
+  }
+
+  box.style.display = "";
+  a.textContent = textA || "なし";
+  b.textContent = textB || "なし";
+}

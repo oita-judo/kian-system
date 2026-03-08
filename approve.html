@@ -4,13 +4,102 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>承認画面</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="approve.css">
 </head>
 <body>
   <div class="container">
-    <h1>承認画面</h1>
-    <div id="msg" class="status"></div>
-    <div id="cards" class="cards"></div>
+    <h1 class="page-title">文書承認画面</h1>
+
+    <!-- 起案情報 -->
+    <section class="info-card mb-24">
+      <h2 class="section-title">起案情報</h2>
+
+      <div class="info-grid" id="summaryGrid">
+        <div class="info-label">起案番号</div>
+        <div class="info-value" id="kianIdView">-</div>
+
+        <div class="info-label">起案日時</div>
+        <div class="info-value" id="createdAtView">-</div>
+
+        <div class="info-label">区分</div>
+        <div class="info-value" id="typeLabelView">-</div>
+
+        <div class="info-label">整理番号</div>
+        <div class="info-value" id="seiriNoView">-</div>
+
+        <div class="info-label">件名</div>
+        <div class="info-value" id="titleView">-</div>
+
+        <div class="info-label">記載者氏名</div>
+        <div class="info-value" id="writerView">-</div>
+
+        <div class="info-label">内容</div>
+        <div class="info-value" id="contentView">-</div>
+      </div>
+    </section>
+
+    <!-- 添付ファイル -->
+    <section class="attach-card mb-24">
+      <h2 class="section-title">添付ファイル</h2>
+      <div id="attachList" class="attach-grid">
+        <!-- JSで描画 -->
+      </div>
+    </section>
+
+    <!-- 承認履歴 -->
+    <section class="history-card mb-24">
+      <h2 class="section-title">承認履歴</h2>
+      <div id="approveHistory" class="history-list">
+        <div class="empty-box">まだ承認はありません</div>
+      </div>
+    </section>
+
+    <!-- 承認者 -->
+    <section class="mb-28">
+      <h2 class="section-title">承認入力</h2>
+
+      <div class="approver-grid">
+        <!-- 承認者A -->
+        <div class="approver-card">
+          <h3 class="sub-title">承認者A 氏名</h3>
+
+          <div class="field">
+            <label for="approverAName">氏名</label>
+            <input type="text" id="approverAName" placeholder="会長名を入力">
+          </div>
+
+          <div class="field">
+            <label for="approverAComment">コメント</label>
+            <textarea id="approverAComment"></textarea>
+          </div>
+
+          <div class="btn-row">
+            <button id="approveABtn" class="btn btn-primary" type="button">Aとして承認</button>
+          </div>
+        </div>
+
+        <!-- 承認者B -->
+        <div class="approver-card">
+          <h3 class="sub-title">承認者B 氏名</h3>
+
+          <div class="field">
+            <label for="approverBName">氏名</label>
+            <input type="text" id="approverBName" placeholder="理事長名を入力">
+          </div>
+
+          <div class="field">
+            <label for="approverBComment">コメント</label>
+            <textarea id="approverBComment"></textarea>
+          </div>
+
+          <div class="btn-row">
+            <button id="approveBBtn" class="btn btn-primary" type="button">Bとして承認</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div id="status" class="muted"></div>
   </div>
 
   <script src="approve.js"></script>

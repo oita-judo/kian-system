@@ -7,91 +7,76 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>大分県柔道連盟　文書起案システム</h1>
+<div class="page-title">大分県柔道連盟　文書起案システム</div>
 
-    <!-- 下書きエリア -->
-    <div class="draft-layout">
-      <div class="draft-left">
-        <div class="draft-tools">
-          <input id="draftNo" type="text" placeholder="下書き番号">
-          <button id="saveDraftBtn" type="button">下書き保存</button>
-          <button id="listDraftBtn" class="listBtn" type="button">下書き一覧</button>
-        </div>
+<!-- 下書き操作 -->
+<div class="draft-toolbar">
+  <input type="text" id="draftNo" class="draft-no" placeholder="下書き番号" readonly>
+  <button type="button" class="btn btn-primary" id="btnSaveDraft">下書き保存</button>
+  <button type="button" class="btn btn-secondary" id="btnToggleDrafts">下書き一覧</button>
+</div>
 
-        <div class="draft-note">
-          下書きはスプレッドシートに保存されます。添付ファイルは下書きには含まれません。
-        </div>
-      </div>
+<p class="draft-note">
+  下書きはスプレッドシートに保存されます。添付ファイルは下書きには含まれません。
+</p>
 
-      <div class="draft-right">
-        <div class="sheetDraftArea">
-          <div class="sheetDraftTitle">下書き一覧</div>
-          <div id="draftSheetList" class="sheetDraftList">読み込み中...</div>
-        </div>
-      </div>
-    </div>
+<!-- 下書き一覧 -->
+<div class="draft-list-wrap" id="draftListWrap">
+  <h3>下書き一覧</h3>
+  <div class="draft-table">
+    <!-- JSで表をここに描画 -->
+  </div>
+</div>
 
-    <hr>
+<hr class="section-line">
 
-    <!-- 最初に見せるのは区分だけ -->
-    <div class="field">
-      <label for="type">区分</label>
-      <select id="type" required>
-        <option value="">選択してください</option>
-        <option value="shishutsu">支出負担行為</option>
-        <option value="shuunyuu">収入行為</option>
-        <option value="ringi">稟議行為</option>
-      </select>
-    </div>
+<!-- 区分～整理番号 -->
+<div class="form-row form-row-5">
+  <div class="field">
+    <label for="kubun">区分</label>
+    <select id="kubun">
+      <option value="">選択してください</option>
+    </select>
+  </div>
 
-    <!-- 区分選択後に表示 -->
-    <div id="kouRow" class="five-row">
-      <div class="field">
-        <label for="kou">項</label>
-        <input id="kou" type="text">
-      </div>
+  <div class="field">
+    <label for="kou">項</label>
+    <input type="text" id="kou">
+  </div>
 
-      <div class="field">
-        <label for="moku">目</label>
-        <input id="moku" type="text">
-      </div>
+  <div class="field">
+    <label for="moku">目</label>
+    <input type="text" id="moku">
+  </div>
 
-      <div class="field">
-        <label for="setsu">節</label>
-        <input id="setsu" type="text">
-      </div>
+  <div class="field">
+    <label for="setsu">節</label>
+    <input type="text" id="setsu">
+  </div>
 
-      <div class="field">
-        <label for="seiriNo">整理番号</label>
-        <input
-          id="seiriNo"
-          type="text"
-          placeholder="例：1"
-          inputmode="numeric"
-          pattern="[1-9][0-9]*"
-          maxlength="6"
-          required
-        >
-      </div>
-    </div>
+  <div class="field">
+    <label for="seiriNo">整理番号</label>
+    <input type="text" id="seiriNo" placeholder="例：1">
+  </div>
+</div>
 
-    <div id="titleRowWrap" class="title-row">
-      <div class="field">
-        <label for="common_title">件名</label>
-        <input id="common_title" type="text">
-      </div>
+<!-- 次の行 -->
+<div class="form-row form-row-2">
+  <div class="field">
+    <label for="kenmei">件名</label>
+    <input type="text" id="kenmei">
+  </div>
 
-      <div class="field">
-        <label for="common_writer">記載者氏名</label>
-        <input id="common_writer" type="text">
-      </div>
-    </div>
+  <div class="field">
+    <label for="writer">記載者氏名</label>
+    <input type="text" id="writer">
+  </div>
+</div>
 
-    <div id="contentWrap">
-      <label for="common_content">内容</label>
-      <textarea id="common_content" rows="4"></textarea>
-    </div>
+<div class="field">
+  <label for="naiyo">内容</label>
+  <textarea id="naiyo" rows="5"></textarea>
+</div>
 
     <!-- 支出 -->
     <div id="form_shishutsu" style="display:none;">

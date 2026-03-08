@@ -26,22 +26,53 @@
       <h3>下書き一覧</h3>
       <div id="draftSheetList" class="draftSheetList">読み込み中...</div>
     </div>
-<!-- 差し戻し欄 -->
-<div id="returnBox" class="return-box" style="display:none;">
-  <h3>差し戻し</h3>
 
-  <div class="return-grid">
-    <div class="return-col">
-      <div class="return-label">Aからの差し戻し</div>
-      <div id="returnCommentA" class="return-comment">なし</div>
-    </div>
+<!-- 状態サマリー -->
+<div class="status-summary-wrap">
+  <div class="status-summary-card">
+    <div class="status-summary-title">起案中</div>
+    <div class="status-summary-count"><span id="countDraft">0</span>件</div>
+    <button type="button" class="btn btn-secondary summary-btn" id="btnToggleDraftList">
+      詳細
+    </button>
+  </div>
 
-    <div class="return-col">
-      <div class="return-label">Bからの差し戻し</div>
-      <div id="returnCommentB" class="return-comment">なし</div>
-    </div>
+  <div class="status-summary-card returned">
+    <div class="status-summary-title">差し戻し</div>
+    <div class="status-summary-count"><span id="countReturned">0</span>件</div>
+    <button type="button" class="btn btn-secondary summary-btn" id="btnToggleReturnedList">
+      詳細
+    </button>
+  </div>
+
+  <div class="status-summary-card approved">
+    <div class="status-summary-title">承認済</div>
+    <div class="status-summary-count"><span id="countApproved">0</span>件</div>
+    <button type="button" class="btn btn-secondary summary-btn" id="btnToggleApprovedList">
+      詳細
+    </button>
   </div>
 </div>
+
+<!-- 起案中一覧 -->
+<div class="draft-list-wrap" id="draftListWrap">
+  <h3>起案中一覧</h3>
+  <div id="draftSheetList" class="draftSheetList">読み込み中...</div>
+</div>
+
+<!-- 差し戻し一覧 -->
+<div class="draft-list-wrap" id="returnedListWrap" style="display:none;">
+  <h3>差し戻し一覧</h3>
+  <div id="returnedSheetList" class="draftSheetList"></div>
+</div>
+
+<!-- 承認済一覧 -->
+<div class="draft-list-wrap" id="approvedListWrap" style="display:none;">
+  <h3>承認済一覧</h3>
+  <div id="approvedSheetList" class="draftSheetList"></div>
+</div>
+    
+
     <hr class="section-line">
 
     <!-- 区分だけ -->

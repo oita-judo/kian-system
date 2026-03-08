@@ -211,9 +211,9 @@ body {
 }
 
 .status-summary-count {
-  font-size: 28px;
+  font-size: 20px;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   color: #14213d;
 }
 

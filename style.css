@@ -366,7 +366,7 @@ textarea.error {
     grid-template-columns: 1fr 1fr;
   }
 }
-
+@media (max-width: 900px)
 @media (max-width: 720px) {
   .container {
     width: calc(100% - 20px);

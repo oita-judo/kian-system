@@ -94,7 +94,7 @@ body {
   text-decoration: underline;
 }
 
-/* PDF 3段組 */
+/* 添付PDF 3段組 */
 .pdfGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -121,9 +121,10 @@ body {
   border: 1px solid #cfd6df;
   border-radius: 12px;
   background: #fff;
+  display: block;
 }
 
-/* 承認履歴 */
+/* 履歴 */
 .attachItem {
   margin-bottom: 20px;
   border: 1px solid #d7dce3;
@@ -203,16 +204,31 @@ body {
   border-color: #5677b8;
 }
 
-.approveBtn {
+.btnRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.approveBtn,
+.returnBtn {
   height: 48px;
   padding: 0 18px;
   border: none;
   border-radius: 14px;
-  background: #0d1b3d;
-  color: #ffffff;
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.approveBtn {
+  background: #0d1b3d;
+  color: #ffffff;
+}
+
+.returnBtn {
+  background: #e53935;
+  color: #ffffff;
 }
 
 .doneBtn {
@@ -222,6 +238,12 @@ body {
 
 .doneBox {
   background: #f8fafc;
+}
+
+.returnBtn:disabled,
+.approveBtn:disabled {
+  background: #94a3b8;
+  cursor: default;
 }
 
 /* レスポンシブ */

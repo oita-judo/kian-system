@@ -1,7 +1,7 @@
 // ================================
 // approve.js
 // ================================
-const GAS_URL = "https://script.google.com/macros/s/AKfycby44eKCbAxF27mLyn54HAHfCE6FP04BAUdt7rt86LwZmCuMUsPT8dB8QroTBLNk35fw2A/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzQyAkQ0KbrQamPXDB_fPCMGBKouYO2HOJ1nWrTTpJe53BiF1KwFKTdr8e2IXNO-iI2EA/exec";
 
 
 function $(id){ return document.getElementById(id); }

@@ -3,7 +3,7 @@
 // 下書き一覧表形式・復元・削除対応版
 // s_date / r_date → GASには date で送信
 // ================================
-const GAS_URL = "https://script.google.com/macros/s/AKfycby44eKCbAxF27mLyn54HAHfCE6FP04BAUdt7rt86LwZmCuMUsPT8dB8QroTBLNk35fw2A/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzQyAkQ0KbrQamPXDB_fPCMGBKouYO2HOJ1nWrTTpJe53BiF1KwFKTdr8e2IXNO-iI2EA/exec";
 
 function $(id){ return document.getElementById(id); }
 function v(id){ return ($(id)?.value || "").trim(); }

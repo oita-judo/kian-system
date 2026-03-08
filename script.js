@@ -2,7 +2,7 @@
 // script.js
 // 起案画面 完成版（件数表示高速化版）
 // ================================
-const GAS_URL = "https://script.google.com/macros/s/AKfycby_WG59PLtbsGK5IWDjHsiYJs8pzvEdpsgYViuAKWwj6uqm2u4yRjhVgEmNciBaAyhUjg/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwe1LAz06J3hPuEwZLiPToZEbPB9XOfo6U_2xW6ahRmaQCU475lwsKA-gEtQj1yo_jmCw/exec";
 
 function $(id) {
   return document.getElementById(id);

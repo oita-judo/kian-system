@@ -12,7 +12,7 @@
 
     <!-- 下書きエリア -->
     <div class="draft-layout">
-      <!-- 左側 -->
+      <!-- 左 -->
       <div class="draft-left">
         <div class="draft-toolbar">
           <input type="text" id="draftNo" class="draft-no" placeholder="下書き番号">
@@ -25,61 +25,77 @@
         </p>
       </div>
 
-      <!-- 右側 -->
+      <!-- 右 -->
       <div class="draft-right">
-        <div class="draft-list-wrap" id="draftListWrap">
+        <div class="draft-list-wrap" id="draftListWrap" style="display:none;">
           <h3>下書き一覧</h3>
-          <div id="draftSheetList" class="draftSheetList">読み込み中...</div>
+          <div id="draftSheetList" class="draftSheetList"></div>
         </div>
       </div>
     </div>
 
-    <!-- 状態サマリー -->
+    <!-- 件数サマリー -->
     <div class="status-summary-wrap">
-  <div class="status-summary-card">
-    <div class="status-summary-title">下書き</div>
-    <div class="status-summary-count"><span id="countDraft">0</span>件</div>
-    <button type="button" class="btn btn-secondary summary-btn" id="btnToggleDraftList">詳細</button>
-  </div>
+      <div class="status-summary-card">
+        <div class="status-summary-title">下書き</div>
+        <div class="status-summary-count"><span id="countDraft">0</span>件</div>
+        <button type="button" class="btn btn-secondary summary-btn" id="btnToggleDraftList">詳細</button>
+      </div>
 
-  <div class="status-summary-card working">
-    <div class="status-summary-title">起案中</div>
-    <div class="status-summary-count"><span id="countPending">0</span>件</div>
-    <button type="button" class="btn btn-secondary summary-btn" id="btnTogglePendingList">詳細</button>
-  </div>
+      <div class="status-summary-card working">
+        <div class="status-summary-title">起案中</div>
+        <div class="status-summary-count"><span id="countPending">0</span>件</div>
+        <button type="button" class="btn btn-secondary summary-btn" id="btnTogglePendingList">詳細</button>
+      </div>
 
-  <div class="status-summary-card returned">
-    <div class="status-summary-title">差し戻し</div>
-    <div class="status-summary-count"><span id="countReturned">0</span>件</div>
-    <button type="button" class="btn btn-secondary summary-btn" id="btnToggleReturnedList">詳細</button>
-  </div>
+      <div class="status-summary-card returned">
+        <div class="status-summary-title">差し戻し</div>
+        <div class="status-summary-count"><span id="countReturned">0</span>件</div>
+        <button type="button" class="btn btn-secondary summary-btn" id="btnToggleReturnedList">詳細</button>
+      </div>
 
-  <div class="status-summary-card approved">
-    <div class="status-summary-title">承認済</div>
-    <div class="status-summary-count"><span id="countApproved">0</span>件</div>
-    <button type="button" class="btn btn-secondary summary-btn" id="btnToggleApprovedList">詳細</button>
-  </div>
-</div>
+      <div class="status-summary-card approved">
+        <div class="status-summary-title">承認済</div>
+        <div class="status-summary-count"><span id="countApproved">0</span>件</div>
+        <button type="button" class="btn btn-secondary summary-btn" id="btnToggleApprovedList">詳細</button>
+      </div>
+    </div>
 
-<div class="draft-list-wrap" id="draftListWrap" style="display:none;">
-  <h3>下書き一覧</h3>
-  <div id="draftSheetList" class="draftSheetList"></div>
-</div>
+    <!-- 起案中一覧 -->
+    <div class="draft-list-wrap" id="pendingListWrap" style="display:none;">
+      <h3>起案中一覧</h3>
+      <div id="pendingSheetList" class="draftSheetList"></div>
+    </div>
 
-<div class="draft-list-wrap" id="pendingListWrap" style="display:none;">
-  <h3>起案中一覧</h3>
-  <div id="pendingSheetList" class="draftSheetList"></div>
-</div>
+    <!-- 差し戻し一覧 -->
+    <div class="draft-list-wrap" id="returnedListWrap" style="display:none;">
+      <h3>差し戻し一覧</h3>
+      <div id="returnedSheetList" class="draftSheetList"></div>
+    </div>
 
-<div class="draft-list-wrap" id="returnedListWrap" style="display:none;">
-  <h3>差し戻し一覧</h3>
-  <div id="returnedSheetList" class="draftSheetList"></div>
-</div>
+    <!-- 承認済一覧 -->
+    <div class="draft-list-wrap" id="approvedListWrap" style="display:none;">
+      <h3>承認済一覧</h3>
+      <div id="approvedSheetList" class="draftSheetList"></div>
+    </div>
 
-<div class="draft-list-wrap" id="approvedListWrap" style="display:none;">
-  <h3>承認済一覧</h3>
-  <div id="approvedSheetList" class="draftSheetList"></div>
-</div>
+    <!-- 差し戻し欄 -->
+    <div id="returnBox" class="return-box" style="display:none;">
+      <h3>差し戻し</h3>
+
+      <div class="return-grid">
+        <div class="return-col">
+          <div class="return-label">Aからの差し戻し</div>
+          <div id="returnCommentA" class="return-comment">なし</div>
+        </div>
+
+        <div class="return-col">
+          <div class="return-label">Bからの差し戻し</div>
+          <div id="returnCommentB" class="return-comment">なし</div>
+        </div>
+      </div>
+    </div>
+
     <hr class="section-line">
 
     <!-- 区分だけ -->
@@ -95,7 +111,7 @@
       </div>
     </div>
 
-    <!-- 区分選択後に表示 -->
+    <!-- 区分選択後 -->
     <div id="afterTypeFields" style="display:none;">
       <div class="form-row form-row-6">
         <div class="field">
@@ -150,8 +166,8 @@
           <div class="field">
             <label for="s_method">支払方法</label>
             <select id="s_method">
-              <option value="現金">現金</option>
               <option value="口座振込">口座振込</option>
+              <option value="現金">現金</option>
             </select>
           </div>
 
@@ -178,8 +194,8 @@
           <div class="field">
             <label for="r_method">受取方法</label>
             <select id="r_method">
-              <option value="現金">現金</option>
               <option value="口座振込">口座振込</option>
+              <option value="現金">現金</option>
             </select>
           </div>
 
@@ -197,7 +213,7 @@
         </div>
       </div>
 
-      <!-- hidden: 互換用 -->
+      <!-- hidden -->
       <input type="hidden" id="s_title">
       <input type="hidden" id="s_writer">
       <input type="hidden" id="s_content">
@@ -208,6 +224,7 @@
       <input type="hidden" id="g_writer">
       <input type="hidden" id="g_content">
 
+      <!-- 添付 -->
       <div id="fileWrap" class="file-field">
         <label for="fileOne">ファイル添付（最大5） / 1件ずつ追加</label>
         <div class="file-row">
@@ -218,6 +235,7 @@
         <ul id="fileList" class="fileList"></ul>
       </div>
 
+      <!-- 操作 -->
       <div id="actionWrap" class="action-row">
         <button id="sendBtn" type="button">送信</button>
         <button id="clearBtn" type="button" class="secondary">クリア</button>

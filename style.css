@@ -35,7 +35,9 @@ body {
 .draft-left {
   min-width: 0;
 }
-
+.draft-right {
+  min-width: 0;
+}
 .draft-toolbar {
   display: flex;
   align-items: center;

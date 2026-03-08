@@ -522,7 +522,7 @@ select:required:invalid{
     grid-template-columns:1fr;
     display:grid !important;
   }
-
+}
   .title-row > .field:last-child{
     width:auto;
     flex:auto;
@@ -539,4 +539,3 @@ select:required:invalid{
   .status{
     white-space:normal;
   }
-}

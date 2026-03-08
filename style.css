@@ -125,7 +125,6 @@ select:required:invalid{
 .draft-right{
   min-width:0;
 }
-
 .draft-tools{
   display:grid;
   grid-template-columns: 100px 140px 140px;

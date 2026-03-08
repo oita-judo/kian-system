@@ -2,7 +2,7 @@
 // approve.js
 // 承認 + 差し戻し対応版
 // ================================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwgSUeNNjd7wTPQOWoj_1Kb_mu4UiLmysxe5yoHbj2jt3axQ55Yx2oFZ7LiTcCWesGX3w/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycby_WG59PLtbsGK5IWDjHsiYJs8pzvEdpsgYViuAKWwj6uqm2u4yRjhVgEmNciBaAyhUjg/exec";
 
 function $(id){ return document.getElementById(id); }
 

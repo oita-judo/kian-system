@@ -22,48 +22,51 @@ body {
 }
 
 /* =========================
-   下書きエリア：2段組み
+   下書きエリア：左右2カラム
 ========================= */
 .draft-layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 790px 1fr;
   gap: 24px;
   align-items: start;
   margin-bottom: 22px;
 }
 
 .draft-left {
-  display: flex;
-  flex-direction: column;
+  min-width: 0;
 }
 
-.draft-toolbar-vertical {
+.draft-toolbar {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 14px;
+  flex-wrap: nowrap;
+  margin-bottom: 14px;
 }
 
 .draft-no {
-  width: 130px;
-  height: 52px;
-  padding: 0 14px;
+  width: 150px;
+  min-width: 150px;
+  height: 58px;
+  padding: 0 16px;
   border: 1px solid #c7ced8;
-  border-radius: 16px;
+  border-radius: 18px;
   background: #ffffff;
   font-size: 16px;
   color: #14213d;
 }
 
 .btn {
-  height: 52px;
+  height: 58px;
   min-width: 150px;
   padding: 0 24px;
   border: none;
-  border-radius: 16px;
+  border-radius: 18px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
   transition: opacity 0.2s ease;
+  white-space: nowrap;
 }
 
 .btn:hover {
@@ -86,7 +89,7 @@ body {
 }
 
 .draft-note {
-  margin: 16px 0 0;
+  margin: 0;
   color: #5d6a7d;
   font-size: 14px;
   line-height: 1.8;
@@ -342,22 +345,16 @@ textarea.error {
    レスポンシブ
 ========================= */
 @media (max-width: 1400px) {
+  .draft-layout {
+    grid-template-columns: 1fr;
+  }
+
   .form-row-6 {
     grid-template-columns: 1fr 1fr 1fr;
   }
 }
 
 @media (max-width: 1200px) {
-  .draft-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .draft-toolbar-vertical {
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
   .draftHead,
   .draftRow {
     grid-template-columns: 80px 140px 110px 1fr 180px 130px;
@@ -374,7 +371,7 @@ textarea.error {
     padding-top: 14px;
   }
 
-  .draft-toolbar-vertical {
+  .draft-toolbar {
     flex-direction: column;
     align-items: stretch;
   }
@@ -382,6 +379,7 @@ textarea.error {
   .draft-no,
   .btn {
     width: 100%;
+    min-width: 0;
   }
 
   .form-row-6,

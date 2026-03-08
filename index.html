@@ -10,31 +10,18 @@
   <div class="container">
     <div class="page-title">大分県柔道連盟　文書起案システム</div>
 
-    <!-- 下書きエリア -->
-    <div class="draft-layout">
-      <!-- 左 -->
-      <div class="draft-left">
-        <div class="draft-toolbar">
-          <input type="text" id="draftNo" class="draft-no" placeholder="下書き番号">
-          <button type="button" class="btn btn-primary" id="saveDraftBtn">下書き保存</button>
-          <button type="button" class="btn btn-secondary" id="listDraftBtn">下書き一覧</button>
-        </div>
-
-        <p class="draft-note">
-          下書きはスプレッドシートに保存されます。添付ファイルは下書きには含まれません。
-        </p>
-      </div>
-
-      <!-- 右 -->
-      <div class="draft-right">
-        <div class="draft-list-wrap" id="draftListWrap" style="display:none;">
-          <h3>下書き一覧</h3>
-          <div id="draftSheetList" class="draftSheetList"></div>
-        </div>
-      </div>
+    <!-- 下書き操作 -->
+    <div class="draft-toolbar">
+      <input type="text" id="draftNo" class="draft-no" placeholder="下書き番号">
+      <button type="button" class="btn btn-primary" id="saveDraftBtn">下書き保存</button>
+      <button type="button" class="btn btn-secondary" id="listDraftBtn">下書き一覧</button>
     </div>
 
-    <!-- 件数サマリー -->
+    <p class="draft-note">
+      下書きはスプレッドシートに保存されます。添付ファイルは下書きには含まれません。
+    </p>
+
+    <!-- 件数カード -->
     <div class="status-summary-wrap">
       <div class="status-summary-card">
         <div class="status-summary-title">下書き</div>
@@ -61,34 +48,35 @@
       </div>
     </div>
 
-    <!-- 起案中一覧 -->
+    <!-- 一覧 -->
+    <div class="draft-list-wrap" id="draftListWrap" style="display:none;">
+      <h3>下書き一覧</h3>
+      <div id="draftSheetList" class="draftSheetList"></div>
+    </div>
+
     <div class="draft-list-wrap" id="pendingListWrap" style="display:none;">
       <h3>起案中一覧</h3>
       <div id="pendingSheetList" class="draftSheetList"></div>
     </div>
 
-    <!-- 差し戻し一覧 -->
     <div class="draft-list-wrap" id="returnedListWrap" style="display:none;">
       <h3>差し戻し一覧</h3>
       <div id="returnedSheetList" class="draftSheetList"></div>
     </div>
 
-    <!-- 承認済一覧 -->
     <div class="draft-list-wrap" id="approvedListWrap" style="display:none;">
       <h3>承認済一覧</h3>
       <div id="approvedSheetList" class="draftSheetList"></div>
     </div>
 
-    <!-- 差し戻し欄 -->
+    <!-- 差し戻しコメント -->
     <div id="returnBox" class="return-box" style="display:none;">
       <h3>差し戻し</h3>
-
       <div class="return-grid">
         <div class="return-col">
           <div class="return-label">Aからの差し戻し</div>
           <div id="returnCommentA" class="return-comment">なし</div>
         </div>
-
         <div class="return-col">
           <div class="return-label">Bからの差し戻し</div>
           <div id="returnCommentB" class="return-comment">なし</div>
@@ -98,8 +86,8 @@
 
     <hr class="section-line">
 
-    <!-- 区分だけ -->
-    <div class="form-row form-row-1">
+    <!-- 1行目 -->
+    <div class="form-row form-row-top">
       <div class="field">
         <label for="type">区分</label>
         <select id="type">
@@ -109,16 +97,22 @@
           <option value="ringi">稟議</option>
         </select>
       </div>
+
+      <div class="field">
+        <label for="seiriNo">整理番号</label>
+        <input type="text" id="seiriNo" placeholder="例：1">
+      </div>
+
+      <div class="field">
+        <label for="commonWriter">記載者氏名</label>
+        <input type="text" id="commonWriter">
+      </div>
     </div>
 
-    <!-- 区分選択後 -->
+    <!-- 区分選択後表示 -->
     <div id="afterTypeFields" style="display:none;">
-      <div class="form-row form-row-6">
-        <div class="field">
-          <label for="seiriNo">整理番号</label>
-          <input type="text" id="seiriNo" placeholder="例：1">
-        </div>
-
+      <!-- 2行目 -->
+      <div class="form-row form-row-kms" id="rowKms">
         <div class="field">
           <label for="kou">項</label>
           <input type="text" id="kou">
@@ -133,87 +127,55 @@
           <label for="setsu">節</label>
           <input type="text" id="setsu">
         </div>
+      </div>
 
+      <!-- 3行目 -->
+      <div class="form-row form-row-title-content">
         <div class="field">
           <label for="commonTitle">件名</label>
           <input type="text" id="commonTitle">
         </div>
 
         <div class="field">
-          <label for="commonWriter">記載者氏名</label>
-          <input type="text" id="commonWriter">
+          <label for="commonContent">内容</label>
+          <textarea id="commonContent" rows="8"></textarea>
         </div>
       </div>
 
-      <div class="field">
-        <label for="commonContent">内容</label>
-        <textarea id="commonContent" rows="5"></textarea>
-      </div>
+      <!-- 4行目 -->
+      <div class="form-row form-row-money" id="rowMoney">
+        <div class="field">
+          <label id="labelAmount" for="moneyAmount">金額</label>
+          <input id="moneyAmount" type="number">
+        </div>
 
-      <!-- 支出 -->
-      <div id="form_shishutsu" style="display:none;">
-        <div class="form-row form-row-4">
-          <div class="field">
-            <label for="s_amount">支出金額</label>
-            <input id="s_amount" type="number">
-          </div>
+        <div class="field">
+          <label id="labelPartner" for="moneyPartner">支払先</label>
+          <input id="moneyPartner" type="text">
+        </div>
 
-          <div class="field">
-            <label for="s_payee">支払先</label>
-            <input id="s_payee" type="text">
-          </div>
+        <div class="field">
+          <label id="labelMethod" for="moneyMethod">方法</label>
+          <select id="moneyMethod">
+            <option value="口座振込">口座振込</option>
+            <option value="現金">現金</option>
+          </select>
+        </div>
 
-          <div class="field">
-            <label for="s_method">支払方法</label>
-            <select id="s_method">
-              <option value="口座振込">口座振込</option>
-              <option value="現金">現金</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="s_date">支出年月日</label>
-            <input id="s_date" type="date">
-          </div>
+        <div class="field">
+          <label id="labelDate" for="moneyDate">年月日</label>
+          <input id="moneyDate" type="date">
         </div>
       </div>
 
-      <!-- 収入 -->
-      <div id="form_shuunyuu" style="display:none;">
-        <div class="form-row form-row-4">
-          <div class="field">
-            <label for="r_amount">収入金額</label>
-            <input id="r_amount" type="number">
-          </div>
-
-          <div class="field">
-            <label for="r_payer">納入者</label>
-            <input id="r_payer" type="text">
-          </div>
-
-          <div class="field">
-            <label for="r_method">受取方法</label>
-            <select id="r_method">
-              <option value="口座振込">口座振込</option>
-              <option value="現金">現金</option>
-            </select>
-          </div>
-
-          <div class="field">
-            <label for="r_date">収納年月日</label>
-            <input id="r_date" type="date">
-          </div>
-        </div>
+      <div class="field note-block">
+        <div>※なお、支出の場合</div>
+        <div class="indent-note">金額は支払金額、支払先、支払方法、支出年月日</div>
+        <div>収入の場合</div>
+        <div class="indent-note">金額は収入金額、納入者、納入方法、納入年月日 とする</div>
       </div>
 
-      <!-- 稟議 -->
-      <div id="form_ringi" style="display:none;">
-        <div id="ringiWrap" class="ringi-box">
-          稟議の追加項目はありません。
-        </div>
-      </div>
-
-      <!-- hidden -->
+      <!-- hidden互換 -->
       <input type="hidden" id="s_title">
       <input type="hidden" id="s_writer">
       <input type="hidden" id="s_content">
@@ -244,6 +206,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=20260308-02"></script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 // ================================
 // script.js
-// 起案画面 完成版　
+// 起案画面 完成版（件数表示高速化版）
 // ================================
-const GAS_URL = "https://script.google.com/macros/s/AKfycby_WG59PLtbsGK5IWDjHsiYJs8pzvEdpsgYViuAKWwj6uqm2u4yRjhVgEmNciBaAyhUjg/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwdXfLyVByUKJQOey9gbq7_Ra2lvzUu6nDwIbX1HFIUfWNsI7Gp4IbsjKiPpe93j_bd7g/exec";
 
 function $(id) {
   return document.getElementById(id);
@@ -350,7 +350,7 @@ async function send() {
     }
 
     clearForm();
-    await loadAllStatusLists();
+    await loadStatusCounts();
 
   } catch (err) {
     setStatus("通信エラー: " + err);
@@ -459,7 +459,7 @@ async function saveDraftByNo() {
     }
 
     setStatus(`下書きを保存しました（番号：${no}）`);
-    await loadAllStatusLists();
+    await loadStatusCounts();
 
   } catch (err) {
     setStatus("下書き保存エラー: " + err);
@@ -467,7 +467,7 @@ async function saveDraftByNo() {
 }
 
 // ================================
-// 状態別一覧描画
+// 一覧描画
 // ================================
 function renderStatusTable(listId, items, mode) {
   const box = $(listId);
@@ -515,7 +515,30 @@ function renderStatusTable(listId, items, mode) {
 }
 
 // ================================
-// 一括取得
+// 件数だけ取得（高速）
+// ================================
+async function loadStatusCounts() {
+  try {
+    const data = await api_({ action: "getStatusCounts" });
+
+    if (!data.ok) {
+      setStatus("件数取得に失敗しました");
+      return;
+    }
+
+    if ($("countDraft")) $("countDraft").textContent = data.draft ?? 0;
+    if ($("countPending")) $("countPending").textContent = data.pending ?? 0;
+    if ($("countReturned")) $("countReturned").textContent = data.returned ?? 0;
+    if ($("countApproved")) $("countApproved").textContent = data.approved ?? 0;
+
+  } catch (err) {
+    console.error(err);
+    setStatus("件数取得に失敗しました");
+  }
+}
+
+// ================================
+// 一覧を取得
 // ================================
 async function loadAllStatusLists() {
   const draftBox = $("draftSheetList");
@@ -540,11 +563,6 @@ async function loadAllStatusLists() {
     pendingItemsCache = data.pendingItems || [];
     returnedItemsCache = data.returnedItems || [];
     approvedItemsCache = data.approvedItems || [];
-
-    if ($("countDraft")) $("countDraft").textContent = draftItemsCache.length;
-    if ($("countPending")) $("countPending").textContent = pendingItemsCache.length;
-    if ($("countReturned")) $("countReturned").textContent = returnedItemsCache.length;
-    if ($("countApproved")) $("countApproved").textContent = approvedItemsCache.length;
 
     renderStatusTable("draftSheetList", draftItemsCache, "draft");
     renderStatusTable("pendingSheetList", pendingItemsCache, "pending");
@@ -589,7 +607,9 @@ async function deleteDraftByStatus(index) {
     }
 
     setStatus(`下書きを削除しました（番号：${item.draftNo}）`);
-    await loadAllStatusLists();
+    await loadStatusCounts();
+    renderStatusTable("draftSheetList", [], "draft");
+    $("draftListWrap").style.display = "none";
   } catch (err) {
     setStatus("下書き削除エラー: " + err);
   }
@@ -597,12 +617,21 @@ async function deleteDraftByStatus(index) {
 window.deleteDraftByStatus = deleteDraftByStatus;
 
 // ================================
-// 開閉
+// 詳細ボタン押下時に一覧取得
 // ================================
-function toggleBox(id) {
-  const box = $(id);
+async function openListWithLoad(boxId) {
+  const box = $(boxId);
   if (!box) return;
-  box.style.display = (box.style.display === "none") ? "" : "none";
+
+  const isHidden = (box.style.display === "none");
+
+  if (!isHidden) {
+    box.style.display = "none";
+    return;
+  }
+
+  await loadAllStatusLists();
+  box.style.display = "";
 }
 
 // ================================
@@ -620,23 +649,23 @@ window.addEventListener("load", async () => {
   if ($("saveDraftBtn")) $("saveDraftBtn").addEventListener("click", saveDraftByNo);
 
   if ($("listDraftBtn")) {
-    $("listDraftBtn").addEventListener("click", () => toggleBox("draftListWrap"));
+    $("listDraftBtn").addEventListener("click", () => openListWithLoad("draftListWrap"));
   }
 
   if ($("btnToggleDraftList")) {
-    $("btnToggleDraftList").addEventListener("click", () => toggleBox("draftListWrap"));
+    $("btnToggleDraftList").addEventListener("click", () => openListWithLoad("draftListWrap"));
   }
 
   if ($("btnTogglePendingList")) {
-    $("btnTogglePendingList").addEventListener("click", () => toggleBox("pendingListWrap"));
+    $("btnTogglePendingList").addEventListener("click", () => openListWithLoad("pendingListWrap"));
   }
 
   if ($("btnToggleReturnedList")) {
-    $("btnToggleReturnedList").addEventListener("click", () => toggleBox("returnedListWrap"));
+    $("btnToggleReturnedList").addEventListener("click", () => openListWithLoad("returnedListWrap"));
   }
 
   if ($("btnToggleApprovedList")) {
-    $("btnToggleApprovedList").addEventListener("click", () => toggleBox("approvedListWrap"));
+    $("btnToggleApprovedList").addEventListener("click", () => openListWithLoad("approvedListWrap"));
   }
 
   if ($("addFileBtn")) $("addFileBtn").addEventListener("click", addSelectedFile);
@@ -646,5 +675,5 @@ window.addEventListener("load", async () => {
     if ($(id)) $(id).addEventListener("input", syncCommonToHiddenFields);
   });
 
-  await loadAllStatusLists();
+  await loadStatusCounts();
 });

@@ -491,6 +491,11 @@ function renderStatusTable(listId, items, mode) {
                 ? `<button class="miniBtn miniDanger" onclick="deleteDraftByStatus(${i})">削除</button>`
                 : ""
             }
+            ${
+              mode === "approved"
+                ? `<button class="miniBtn miniPrimary" onclick="markApprovedDone('${escapeHtml_(d.kianId || "")}')">確定</button>`
+                : ""
+            }
           </div>
         </div>
       `).join("")}

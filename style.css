@@ -91,7 +91,7 @@ textarea {
   line-height: 1.8;
 }
 
-/* サマリー */
+/* 状態サマリー */
 .summary-lines {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

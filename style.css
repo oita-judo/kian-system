@@ -531,3 +531,7 @@ input[type="file"]:focus {
     gap: 10px;
   }
 }
+.miniDone {
+  background: #2e7d32;
+  color: #fff;
+}

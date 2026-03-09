@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大分県柔道連盟　承認済一覧</title>
+  <link rel="stylesheet" href="approved.css">
+</head>
+<body>
+  <div class="container">
+    <h1 class="page-title">大分県柔道連盟　承認済一覧</h1>
+
+    <div class="toolbar">
+      <div class="filter-buttons">
+        <button class="filter-btn active" data-type="">すべて</button>
+        <button class="filter-btn" data-type="shuunyuu">収入</button>
+        <button class="filter-btn" data-type="shishutsu">支出</button>
+        <button class="filter-btn" data-type="ringi">稟議</button>
+      </div>
+
+      <div class="sort-area">
+        <label for="sortKey">並び替え</label>
+        <select id="sortKey">
+          <option value="createdAt">起案日</option>
+          <option value="updatedAt">更新日</option>
+          <option value="seiriNo">整理番号</option>
+          <option value="title">件名</option>
+        </select>
+
+        <select id="sortDir">
+          <option value="desc">降順</option>
+          <option value="asc">昇順</option>
+        </select>
+
+        <button id="reloadBtn" class="reload-btn" type="button">再読込</button>
+      </div>
+    </div>
+
+    <div id="msg" class="msg"></div>
+
+    <div class="table-wrap">
+      <table class="approved-table">
+        <thead>
+          <tr>
+            <th>起案日</th>
+            <th>区分</th>
+            <th>整理番号</th>
+            <th>件名</th>
+            <th>記載者</th>
+            <th>更新日</th>
+            <th>PDF</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="approvedBody">
+          <tr><td colspan="8">読み込み中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="approved.js?v=20260308-02"></script>
+</body>
+</html>

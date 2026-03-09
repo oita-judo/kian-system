@@ -3,13 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>大分県柔道連盟　承認済一覧</title>
+  <title>承認済・決定済一覧</title>
   <link rel="stylesheet" href="approved.css">
 </head>
 <body>
   <div class="container">
-    <h1 class="page-title">大分県柔道連盟　承認済一覧</h1>
+    <h1 class="page-title">大分県柔道連盟　承認済のページ</h1>
 
+    <!-- 承認済（決定前） -->
+    <section class="panel">
+      <div class="panel-header">
+        <h2>承認済を表示</h2>
+      </div>
+      <div id="msg" class="msg"></div>
+      <div id="approvedBeforeWrap" class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>起案日</th>
+              <th>区分</th>
+              <th>整理番号</th>
+              <th>件名</th>
+              <th>記載者</th>
+              <th>更新日</th>
+              <th>決定</th>
+            </tr>
+          </thead>
+          <tbody id="approvedBeforeBody">
+            <tr><td colspan="7">読み込み中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="section-line">
+
+    <!-- 絞り込み -->
     <div class="toolbar">
       <div class="filter-buttons">
         <button class="filter-btn active" data-type="">すべて</button>
@@ -36,29 +65,36 @@
       </div>
     </div>
 
-    <div id="msg" class="msg"></div>
+    <!-- 決定済 -->
+    <section class="panel">
+      <div class="panel-header">
+        <h2>決定済を表示</h2>
+        <div class="panel-note">PDFリンク付き</div>
+      </div>
 
-    <div class="table-wrap">
-      <table class="approved-table">
-        <thead>
-          <tr>
-            <th>起案日</th>
-            <th>区分</th>
-            <th>整理番号</th>
-            <th>件名</th>
-            <th>記載者</th>
-            <th>更新日</th>
-            <th>PDF</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody id="approvedBody">
-          <tr><td colspan="8">読み込み中...</td></tr>
-        </tbody>
-      </table>
-    </div>
+      <div id="doneWrap" class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>起案日</th>
+              <th>区分</th>
+              <th>整理番号</th>
+              <th>件名</th>
+              <th>記載者</th>
+              <th>決定日</th>
+              <th>PDFリンク</th>
+            </tr>
+          </thead>
+          <tbody id="doneBody">
+            <tr><td colspan="7">読み込み中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="done-note">決定済はボタンを押すまで出さない</div>
+    </section>
   </div>
 
-  <script src="approved.js?v=20260308-02"></script>
+  <script src="approved.js?v=20260308-03"></script>
 </body>
 </html>

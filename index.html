@@ -21,32 +21,44 @@
       下書きはスプレッドシートに保存されます。添付ファイルは下書きには含まれません。
     </p>
 
-    <!-- 件数カード -->
-    <div class="status-summary-wrap">
-      <div class="status-summary-card">
-        <div class="status-summary-title">下書き</div>
-        <div class="status-summary-count"><span id="countDraft">0</span>件</div>
-        <button type="button" class="btn btn-secondary summary-btn" id="btnToggleDraftList">詳細</button>
-      </div>
-
-      <div class="status-summary-card working">
-        <div class="status-summary-title">起案中</div>
-        <div class="status-summary-count"><span id="countPending">0</span>件</div>
-        <button type="button" class="btn btn-secondary summary-btn" id="btnTogglePendingList">詳細</button>
-      </div>
-
-      <div class="status-summary-card returned">
-        <div class="status-summary-title">差し戻し</div>
-        <div class="status-summary-count"><span id="countReturned">0</span>件</div>
-        <button type="button" class="btn btn-secondary summary-btn" id="btnToggleReturnedList">詳細</button>
-      </div>
-
-      <div class="status-summary-card approved">
-        <div class="status-summary-title">承認済</div>
-        <div class="status-summary-count"><span id="countApproved">0</span>件</div>
-        <button type="button" class="btn btn-secondary summary-btn" id="btnToggleApprovedList">詳細</button>
-      </div>
+    <!-- 件数サマリー（横並び1行型） -->
+<div class="summary-lines">
+  <div class="summary-line summary-draft">
+    <div class="summary-name">下書き</div>
+    <div class="summary-count"><span id="countDraft">0</span>件</div>
+    <div class="summary-actions">
+      <button type="button" class="mini-summary-btn" id="btnToggleDraftList">詳細</button>
+      <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideDraftList">非表示</button>
     </div>
+  </div>
+
+  <div class="summary-line summary-pending">
+    <div class="summary-name">起案中</div>
+    <div class="summary-count"><span id="countPending">0</span>件</div>
+    <div class="summary-actions">
+      <button type="button" class="mini-summary-btn" id="btnTogglePendingList">詳細</button>
+      <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHidePendingList">非表示</button>
+    </div>
+  </div>
+
+  <div class="summary-line summary-returned">
+    <div class="summary-name">差し戻し</div>
+    <div class="summary-count"><span id="countReturned">0</span>件</div>
+    <div class="summary-actions">
+      <button type="button" class="mini-summary-btn" id="btnToggleReturnedList">詳細</button>
+      <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideReturnedList">非表示</button>
+    </div>
+  </div>
+
+  <div class="summary-line summary-approved">
+    <div class="summary-name">承認済</div>
+    <div class="summary-count"><span id="countApproved">0</span>件</div>
+    <div class="summary-actions">
+      <button type="button" class="mini-summary-btn" id="btnToggleApprovedList">詳細</button>
+      <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideApprovedList">非表示</button>
+    </div>
+  </div>
+</div>
 
     <!-- 一覧 -->
     <div class="draft-list-wrap" id="draftListWrap" style="display:none;">

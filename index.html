@@ -8,82 +8,82 @@
 </head>
 <body>
   <div class="container">
-    <div class="page-title">大分県柔道連盟　文書起案システム</div>
+    <h1 class="page-title">大分県柔道連盟　文書起案システム</h1>
 
     <!-- 下書き操作 -->
     <div class="draft-toolbar">
       <input type="text" id="draftNo" class="draft-no" placeholder="下書き番号">
       <button type="button" class="btn btn-primary" id="saveDraftBtn">下書き保存</button>
-      <button type="button" class="btn btn-secondary" id="listDraftBtn">下書き一覧</button>
+      <button type="button" class="btn btn-secondary" id="btnToggleDraftListTop">下書き一覧</button>
     </div>
 
     <p class="draft-note">
       下書きはスプレッドシートに保存されます。添付ファイルは下書きには含まれません。
     </p>
 
-    <!-- 件数サマリー（横並び1行型） -->
-<div class="summary-lines">
-  <div class="summary-line summary-draft">
-    <div class="summary-name">下書き</div>
-    <div class="summary-count"><span id="countDraft">0</span>件</div>
-    <div class="summary-actions">
-      <button type="button" class="mini-summary-btn" id="btnToggleDraftList">詳細</button>
-      <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideDraftList">非表示</button>
-    </div>
-  </div>
+    <!-- 状態サマリー -->
+    <div class="summary-lines">
+      <div class="summary-line summary-draft">
+        <div class="summary-name">下書き</div>
+        <div class="summary-count"><span id="countDraft">0</span>件</div>
+        <div class="summary-actions">
+          <button type="button" class="mini-summary-btn" id="btnShowDraft">詳細</button>
+          <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideDraft">非表示</button>
+        </div>
+      </div>
 
-  <div class="summary-line summary-pending">
-    <div class="summary-name">起案中</div>
-    <div class="summary-count"><span id="countPending">0</span>件</div>
-    <div class="summary-actions">
-      <button type="button" class="mini-summary-btn" id="btnTogglePendingList">詳細</button>
-      <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHidePendingList">非表示</button>
-    </div>
-  </div>
+      <div class="summary-line summary-pending">
+        <div class="summary-name">起案中</div>
+        <div class="summary-count"><span id="countPending">0</span>件</div>
+        <div class="summary-actions">
+          <button type="button" class="mini-summary-btn" id="btnShowPending">詳細</button>
+          <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHidePending">非表示</button>
+        </div>
+      </div>
 
-  <div class="summary-line summary-returned">
-    <div class="summary-name">差し戻し</div>
-    <div class="summary-count"><span id="countReturned">0</span>件</div>
-    <div class="summary-actions">
-      <button type="button" class="mini-summary-btn" id="btnToggleReturnedList">詳細</button>
-      <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideReturnedList">非表示</button>
-    </div>
-  </div>
+      <div class="summary-line summary-returned">
+        <div class="summary-name">差し戻し</div>
+        <div class="summary-count"><span id="countReturned">0</span>件</div>
+        <div class="summary-actions">
+          <button type="button" class="mini-summary-btn" id="btnShowReturned">詳細</button>
+          <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideReturned">非表示</button>
+        </div>
+      </div>
 
-  <div class="summary-line summary-approved">
-    <div class="summary-name">承認済</div>
-    <div class="summary-count"><span id="countApproved">0</span>件</div>
-    <div class="summary-actions">
-      <button type="button" class="mini-summary-btn" id="btnToggleApprovedList">詳細</button>
-      <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideApprovedList">非表示</button>
+      <div class="summary-line summary-approved">
+        <div class="summary-name">承認済</div>
+        <div class="summary-count"><span id="countApproved">0</span>件</div>
+        <div class="summary-actions">
+          <button type="button" class="mini-summary-btn" id="btnShowApproved">詳細</button>
+          <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideApproved">非表示</button>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
     <!-- 一覧 -->
-    <div class="draft-list-wrap" id="draftListWrap" style="display:none;">
-      <h3>下書き一覧</h3>
-      <div id="draftSheetList" class="draftSheetList"></div>
-    </div>
+    <section id="draftListWrap" class="list-wrap" style="display:none;">
+      <h2>下書き一覧</h2>
+      <div id="draftSheetList"></div>
+    </section>
 
-    <div class="draft-list-wrap" id="pendingListWrap" style="display:none;">
-      <h3>起案中一覧</h3>
-      <div id="pendingSheetList" class="draftSheetList"></div>
-    </div>
+    <section id="pendingListWrap" class="list-wrap" style="display:none;">
+      <h2>起案中一覧</h2>
+      <div id="pendingSheetList"></div>
+    </section>
 
-    <div class="draft-list-wrap" id="returnedListWrap" style="display:none;">
-      <h3>差し戻し一覧</h3>
-      <div id="returnedSheetList" class="draftSheetList"></div>
-    </div>
+    <section id="returnedListWrap" class="list-wrap" style="display:none;">
+      <h2>差し戻し一覧</h2>
+      <div id="returnedSheetList"></div>
+    </section>
 
-    <div class="draft-list-wrap" id="approvedListWrap" style="display:none;">
-      <h3>承認済一覧</h3>
-      <div id="approvedSheetList" class="draftSheetList"></div>
-    </div>
+    <section id="approvedListWrap" class="list-wrap" style="display:none;">
+      <h2>承認済一覧</h2>
+      <div id="approvedSheetList"></div>
+    </section>
 
     <!-- 差し戻しコメント -->
-    <div id="returnBox" class="return-box" style="display:none;">
-      <h3>差し戻し</h3>
+    <section id="returnBox" class="return-box" style="display:none;">
+      <h2>差し戻し</h2>
       <div class="return-grid">
         <div class="return-col">
           <div class="return-label">Aからの差し戻し</div>
@@ -94,12 +94,12 @@
           <div id="returnCommentB" class="return-comment">なし</div>
         </div>
       </div>
-    </div>
+    </section>
 
     <hr class="section-line">
 
     <!-- 1行目 -->
-    <div class="form-row form-row-top">
+    <div class="form-row row-top">
       <div class="field">
         <label for="type">区分</label>
         <select id="type">
@@ -121,20 +121,17 @@
       </div>
     </div>
 
-    <!-- 区分選択後表示 -->
     <div id="afterTypeFields" style="display:none;">
       <!-- 2行目 -->
-      <div class="form-row form-row-kms" id="rowKms">
+      <div class="form-row row-kms" id="rowKms">
         <div class="field">
           <label for="kou">項</label>
           <input type="text" id="kou">
         </div>
-
         <div class="field">
           <label for="moku">目</label>
           <input type="text" id="moku">
         </div>
-
         <div class="field">
           <label for="setsu">節</label>
           <input type="text" id="setsu">
@@ -142,12 +139,11 @@
       </div>
 
       <!-- 3行目 -->
-      <div class="form-row form-row-title-content">
+      <div class="form-row row-title-content">
         <div class="field">
           <label for="commonTitle">件名</label>
           <input type="text" id="commonTitle">
         </div>
-
         <div class="field">
           <label for="commonContent">内容</label>
           <textarea id="commonContent" rows="8"></textarea>
@@ -155,17 +151,15 @@
       </div>
 
       <!-- 4行目 -->
-      <div class="form-row form-row-money" id="rowMoney">
+      <div class="form-row row-money" id="rowMoney">
         <div class="field">
           <label id="labelAmount" for="moneyAmount">金額</label>
           <input id="moneyAmount" type="number">
         </div>
-
         <div class="field">
           <label id="labelPartner" for="moneyPartner">支払先</label>
           <input id="moneyPartner" type="text">
         </div>
-
         <div class="field">
           <label id="labelMethod" for="moneyMethod">方法</label>
           <select id="moneyMethod">
@@ -173,18 +167,17 @@
             <option value="現金">現金</option>
           </select>
         </div>
-
         <div class="field">
           <label id="labelDate" for="moneyDate">年月日</label>
           <input id="moneyDate" type="date">
         </div>
       </div>
 
-      <div class="field note-block">
+      <div class="note-block">
         <div>※なお、支出の場合</div>
-        <div class="indent-note">金額は支払金額、支払先、支払方法、支出年月日</div>
+        <div class="indent-note">支払金額、支払先、支払方法、支出年月日</div>
         <div>収入の場合</div>
-        <div class="indent-note">金額は収入金額、納入者、納入方法、納入年月日 とする</div>
+        <div class="indent-note">収入金額、納入者、納入方法、納入年月日 とする</div>
       </div>
 
       <!-- hidden互換 -->
@@ -199,25 +192,25 @@
       <input type="hidden" id="g_content">
 
       <!-- 添付 -->
-      <div id="fileWrap" class="file-field">
+      <div class="file-field">
         <label for="fileOne">ファイル添付（最大5） / 1件ずつ追加</label>
         <div class="file-row">
           <input id="fileOne" type="file">
-          <button id="addFileBtn" type="button" class="addBtn">添付を追加</button>
-          <button id="clearFilesBtn" type="button" class="deleteBtn">添付を全削除</button>
+          <button id="addFileBtn" type="button" class="mini-action-btn primary">添付を追加</button>
+          <button id="clearFilesBtn" type="button" class="mini-action-btn danger">添付を全削除</button>
         </div>
-        <ul id="fileList" class="fileList"></ul>
+        <ul id="fileList" class="file-list"></ul>
       </div>
 
       <!-- 操作 -->
-      <div id="actionWrap" class="action-row">
-        <button id="sendBtn" type="button">送信</button>
-        <button id="clearBtn" type="button" class="secondary">クリア</button>
-        <div id="status" class="status"></div>
+      <div class="action-row">
+        <button id="sendBtn" type="button" class="mini-action-btn primary">送信</button>
+        <button id="clearBtn" type="button" class="mini-action-btn secondary">クリア</button>
+        <div id="status" class="status-text"></div>
       </div>
     </div>
   </div>
 
-  <script src="script.js?v=20260308-02"></script>
+  <script src="script.js?v=20260308-05"></script>
 </body>
 </html>

@@ -642,6 +642,18 @@ window.addEventListener("load", async () => {
   if ($("addFileBtn")) $("addFileBtn").addEventListener("click", addSelectedFile);
   if ($("clearFilesBtn")) $("clearFilesBtn").addEventListener("click", clearSelectedFiles);
 
+    if ($("btnHideDraftList")) {
+    $("btnHideDraftList").addEventListener("click", () => hideList("draftListWrap"));
+  }
+  if ($("btnHidePendingList")) {
+    $("btnHidePendingList").addEventListener("click", () => hideList("pendingListWrap"));
+  }
+  if ($("btnHideReturnedList")) {
+    $("btnHideReturnedList").addEventListener("click", () => hideList("returnedListWrap"));
+  }
+  if ($("btnHideApprovedList")) {
+    $("btnHideApprovedList").addEventListener("click", () => hideList("approvedListWrap"));
+  }
   ["commonTitle", "commonWriter", "commonContent"].forEach(id => {
     if ($(id)) $(id).addEventListener("input", syncCommonToHiddenFields);
   });

@@ -7,10 +7,14 @@
   <link rel="stylesheet" href="approved.css">
 </head>
 <body>
+  <div class="auth-topbar">
+    <span>ログイン中: <strong id="authUserText"></strong></span>
+    <button type="button" id="logoutBtn">ログアウト</button>
+  </div>
+
   <div class="container">
     <h1 class="page-title">大分県柔道連盟　承認済のページ</h1>
 
-    <!-- 承認済（決定前） -->
     <section class="panel">
       <div class="panel-header">
         <h2>承認済を表示</h2>
@@ -38,7 +42,6 @@
 
     <hr class="section-line">
 
-    <!-- 絞り込み -->
     <div class="toolbar">
       <div class="filter-buttons">
         <button class="filter-btn active" data-type="">すべて</button>
@@ -65,7 +68,6 @@
       </div>
     </div>
 
-    <!-- 決定済 -->
     <section class="panel">
       <div class="panel-header">
         <h2>決定済を表示</h2>
@@ -95,6 +97,7 @@
     </section>
   </div>
 
-  <script src="approved.js?v=20260308-03"></script>
+  <script src="../auth.js"></script>
+  <script src="approved.js"></script>
 </body>
 </html>

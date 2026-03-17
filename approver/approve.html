@@ -1,4 +1,4 @@
-<!doctype html>
+<!doctype html>　
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -7,6 +7,11 @@
   <link rel="stylesheet" href="approve.css">
 </head>
 <body>
+  <div class="auth-topbar">
+    <span>ログイン中: <strong id="authUserText"></strong></span>
+    <button type="button" id="logoutBtn">ログアウト</button>
+  </div>
+
   <div class="container">
     <h1 class="page-title">承認画面</h1>
 
@@ -18,6 +23,6 @@
   </div>
 
   <script src="../auth.js"></script>
-<script src="approve.js"></script>
+  <script src="approve.js"></script>
 </body>
 </html>

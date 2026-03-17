@@ -38,6 +38,11 @@ function typeLabelJa(type) {
   return "稟議";
 }
 
+function canMarkDone_() {
+  const auth = getAuth();
+  return !!auth && auth.role === "admin";
+}
+
 async function api(payload) {
   const res = await fetch(GAS_URL, {
     method: "POST",
@@ -285,10 +290,11 @@ function clearForm() {
 
 async function send() {
   const auth = getAuth();
-if (!auth || !["drafter", "admin"].includes(auth.role)) {
-  setStatus("送信権限がありません。");
-  return;
-}
+  if (!auth || !["drafter", "admin"].includes(auth.role)) {
+    setStatus("送信権限がありません。");
+    return;
+  }
+
   setStatus("送信中...");
   try {
     const payload = await buildPayload();
@@ -321,10 +327,11 @@ if (!auth || !["drafter", "admin"].includes(auth.role)) {
 
 async function saveDraftByNo() {
   const auth = getAuth();
-if (!auth || !["drafter", "admin"].includes(auth.role)) {
-  setStatus("下書き保存の権限がありません。");
-  return;
-}
+  if (!auth || !["drafter", "admin"].includes(auth.role)) {
+    setStatus("下書き保存の権限がありません。");
+    return;
+  }
+
   const draftNo = v("draftNo");
   if (!draftNo) {
     setStatus("下書き番号を入力してください。");
@@ -387,7 +394,7 @@ function actionButtons(mode, item, index) {
   if (mode === "draft") {
     buttons.push(`<button class="mini-btn danger" onclick="deleteDraftItem(${index})">削除</button>`);
   }
-  if (mode === "approved") {
+  if (mode === "approved" && canMarkDone_()) {
     buttons.push(`<button class="mini-btn done" onclick="markApprovedDone('${item.kianId}')">確定</button>`);
   }
 
@@ -519,6 +526,11 @@ window.deleteDraftItem = async function(index) {
 };
 
 window.markApprovedDone = async function(kianId) {
+  if (!canMarkDone_()) {
+    setStatus("確定の権限がありません。");
+    return;
+  }
+
   if (!kianId) return;
   if (!confirm("この承認済を確定しますか？")) return;
 
@@ -558,15 +570,17 @@ function bindSummaryButtons() {
 }
 
 window.addEventListener("load", async () => {
-    const auth = requirePageAuth(["drafter", "admin"]);
+  const auth = requirePageAuth(["drafter", "admin"]);
   if (!auth) return;
 
   if ($("authUserText")) {
     $("authUserText").textContent = `${auth.name}（${auth.role}）`;
   }
+
   if ($("logoutBtn")) {
     $("logoutBtn").addEventListener("click", logoutToRoot);
   }
+
   applyTypeUI();
   bindSeiriNoRule();
   renderSelectedFiles();

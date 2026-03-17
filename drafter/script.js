@@ -1,4 +1,4 @@
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzwiLcSMXpXxQD3Z17X8CnipLfueqd9kHPHBPYKvowO5SxzYZStxCtI0qhh-mfEFO1ndA/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbxAFwRbhcNFfd2p5PmrzyGis7cS0p90Z0UMsHD0gCf31ZP945ZjQuyiC-22SlXx4_QX/exec";
 
 const SUMMARY_CONFIG = {
   draft:    { countId: "countDraft",    wrapId: "draftListWrap",    listId: "draftSheetList" },

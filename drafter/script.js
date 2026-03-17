@@ -284,6 +284,11 @@ function clearForm() {
 }
 
 async function send() {
+  const auth = getAuth();
+if (!auth || !["drafter", "admin"].includes(auth.role)) {
+  setStatus("送信権限がありません。");
+  return;
+}
   setStatus("送信中...");
   try {
     const payload = await buildPayload();
@@ -315,6 +320,11 @@ async function send() {
 }
 
 async function saveDraftByNo() {
+  const auth = getAuth();
+if (!auth || !["drafter", "admin"].includes(auth.role)) {
+  setStatus("下書き保存の権限がありません。");
+  return;
+}
   const draftNo = v("draftNo");
   if (!draftNo) {
     setStatus("下書き番号を入力してください。");

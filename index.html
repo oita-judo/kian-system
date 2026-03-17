@@ -1,122 +1,220 @@
+
 <!doctype html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>大分県柔道連盟　文書起案システム ログイン</title>
-  <style>
-    body{
-      margin:0;
-      font-family:sans-serif;
-      background:#f5f6f8;
-      display:flex;
-      min-height:100vh;
-      align-items:center;
-      justify-content:center;
-    }
-    .card{
-      width:min(420px, 92vw);
-      background:#fff;
-      border-radius:16px;
-      box-shadow:0 8px 24px rgba(0,0,0,.08);
-      padding:28px;
-      box-sizing:border-box;
-      text-align:center;
-    }
-    h1{
-      font-size:24px;
-      margin:0 0 10px;
-    }
-    p{
-      color:#555;
-      margin:0 0 18px;
-    }
-    input{
-      width:100%;
-      box-sizing:border-box;
-      padding:12px;
-      font-size:18px;
-      margin-bottom:12px;
-    }
-    button{
-      width:100%;
-      padding:12px;
-      font-size:16px;
-      border:none;
-      border-radius:10px;
-      background:#1f6feb;
-      color:#fff;
-      cursor:pointer;
-    }
-    .msg{
-      margin-top:12px;
-      min-height:1.5em;
-      color:#c62828;
-      font-size:14px;
-    }
-    .note{
-      margin-top:14px;
-      font-size:12px;
-      color:#777;
-    }
-  </style>
+  <title>大分県柔道連盟 文書起案システム</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="card">
-    <h1>大分県柔道連盟　文書起案システム</h1>
-    <p>PINを入力してください</p>
+  <div class="container">
+    <div class="title-row">
+  <h1 class="page-title">大分県柔道連盟　文書起案システム</h1>
+  <a href="approved.html" class="approved-link">承認済ページ</a>
+</div>
 
-    <input id="pin" type="password" inputmode="numeric" maxlength="4" placeholder="4桁PIN">
-    <button id="loginBtn" type="button">ログイン</button>
-    <div id="msg" class="msg"></div>
+    <!-- 下書き操作 -->
+    <div class="draft-toolbar">
+      <input type="text" id="draftNo" class="draft-no" placeholder="下書き番号">
+      <button type="button" class="btn btn-primary" id="saveDraftBtn">下書き保存</button>
+      <button type="button" class="btn btn-secondary" id="btnToggleDraftListTop">下書き一覧</button>
+    </div>
 
-    <div class="note">起案者・承認者・保管担当ごとに遷移先が変わります。</div>
+    <p class="draft-note">
+      下書きはスプレッドシートに保存されます。添付ファイルは下書きには含まれません。
+    </p>
+
+    <!-- 状態サマリー -->
+    <div class="summary-lines">
+      <div class="summary-line summary-draft">
+        <div class="summary-name">下書き</div>
+        <div class="summary-count"><span id="countDraft">0</span>件</div>
+        <div class="summary-actions">
+          <button type="button" class="mini-summary-btn" id="btnShowDraft">詳細</button>
+          <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideDraft">非表示</button>
+        </div>
+      </div>
+
+      <div class="summary-line summary-pending">
+        <div class="summary-name">起案中</div>
+        <div class="summary-count"><span id="countPending">0</span>件</div>
+        <div class="summary-actions">
+          <button type="button" class="mini-summary-btn" id="btnShowPending">詳細</button>
+          <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHidePending">非表示</button>
+        </div>
+      </div>
+
+      <div class="summary-line summary-returned">
+        <div class="summary-name">差し戻し</div>
+        <div class="summary-count"><span id="countReturned">0</span>件</div>
+        <div class="summary-actions">
+          <button type="button" class="mini-summary-btn" id="btnShowReturned">詳細</button>
+          <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideReturned">非表示</button>
+        </div>
+      </div>
+
+      <div class="summary-line summary-approved">
+        <div class="summary-name">承認済</div>
+        <div class="summary-count"><span id="countApproved">0</span>件</div>
+        <div class="summary-actions">
+          <button type="button" class="mini-summary-btn" id="btnShowApproved">詳細</button>
+          <button type="button" class="mini-summary-btn mini-summary-sub" id="btnHideApproved">非表示</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 一覧 -->
+    <section id="draftListWrap" class="list-wrap" style="display:none;">
+      <h2>下書き一覧</h2>
+      <div id="draftSheetList"></div>
+    </section>
+
+    <section id="pendingListWrap" class="list-wrap" style="display:none;">
+      <h2>起案中一覧</h2>
+      <div id="pendingSheetList"></div>
+    </section>
+
+    <section id="returnedListWrap" class="list-wrap" style="display:none;">
+      <h2>差し戻し一覧</h2>
+      <div id="returnedSheetList"></div>
+    </section>
+
+    <section id="approvedListWrap" class="list-wrap" style="display:none;">
+      <h2>承認済一覧</h2>
+      <div id="approvedSheetList"></div>
+    </section>
+
+    <!-- 差し戻しコメント -->
+    <section id="returnBox" class="return-box" style="display:none;">
+      <h2>差し戻し</h2>
+      <div class="return-grid">
+        <div class="return-col">
+          <div class="return-label">Aからの差し戻し</div>
+          <div id="returnCommentA" class="return-comment">なし</div>
+        </div>
+        <div class="return-col">
+          <div class="return-label">Bからの差し戻し</div>
+          <div id="returnCommentB" class="return-comment">なし</div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-line">
+
+    <!-- 1行目 -->
+    <div class="form-row row-top">
+      <div class="field">
+        <label for="type">区分</label>
+        <select id="type">
+          <option value="">選択してください</option>
+          <option value="shishutsu">支出</option>
+          <option value="shuunyuu">収入</option>
+          <option value="ringi">稟議</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="seiriNo">整理番号</label>
+        <input type="text" id="seiriNo" placeholder="例：1">
+      </div>
+
+      <div class="field">
+        <label for="commonWriter">記載者氏名</label>
+        <input type="text" id="commonWriter">
+      </div>
+    </div>
+
+    <div id="afterTypeFields" style="display:none;">
+      <!-- 2行目 -->
+      <div class="form-row row-kms" id="rowKms">
+        <div class="field">
+          <label for="kou">項</label>
+          <input type="text" id="kou">
+        </div>
+        <div class="field">
+          <label for="moku">目</label>
+          <input type="text" id="moku">
+        </div>
+        <div class="field">
+          <label for="setsu">節</label>
+          <input type="text" id="setsu">
+        </div>
+      </div>
+
+      <!-- 3行目 -->
+      <div class="form-row row-title-content">
+        <div class="field">
+          <label for="commonTitle">件名</label>
+          <input type="text" id="commonTitle">
+        </div>
+        <div class="field">
+          <label for="commonContent">内容</label>
+          <textarea id="commonContent" rows="8"></textarea>
+        </div>
+      </div>
+
+      <!-- 4行目 -->
+      <div class="form-row row-money" id="rowMoney">
+        <div class="field">
+          <label id="labelAmount" for="moneyAmount">金額</label>
+          <input id="moneyAmount" type="number">
+        </div>
+        <div class="field">
+          <label id="labelPartner" for="moneyPartner">支払先</label>
+          <input id="moneyPartner" type="text">
+        </div>
+        <div class="field">
+          <label id="labelMethod" for="moneyMethod">方法</label>
+          <select id="moneyMethod">
+            <option value="口座振込">口座振込</option>
+            <option value="現金">現金</option>
+          </select>
+        </div>
+        <div class="field">
+          <label id="labelDate" for="moneyDate">年月日</label>
+          <input id="moneyDate" type="date">
+        </div>
+      </div>
+
+      <div class="note-block">
+        <div>※なお、支出の場合</div>
+        <div class="indent-note">支払金額、支払先、支払方法、支出年月日</div>
+        <div>収入の場合</div>
+        <div class="indent-note">収入金額、納入者、納入方法、納入年月日 とする</div>
+      </div>
+
+      <!-- hidden互換 -->
+      <input type="hidden" id="s_title">
+      <input type="hidden" id="s_writer">
+      <input type="hidden" id="s_content">
+      <input type="hidden" id="r_title">
+      <input type="hidden" id="r_writer">
+      <input type="hidden" id="r_content">
+      <input type="hidden" id="g_title">
+      <input type="hidden" id="g_writer">
+      <input type="hidden" id="g_content">
+
+      <!-- 添付 -->
+      <div class="file-field">
+        <label for="fileOne">ファイル添付（最大5） / 1件ずつ追加</label>
+        <div class="file-row">
+          <input id="fileOne" type="file">
+          <button id="addFileBtn" type="button" class="mini-action-btn primary">添付を追加</button>
+          <button id="clearFilesBtn" type="button" class="mini-action-btn danger">添付を全削除</button>
+        </div>
+        <ul id="fileList" class="file-list"></ul>
+      </div>
+
+      <!-- 操作 -->
+      <div class="action-row">
+        <button id="sendBtn" type="button" class="mini-action-btn primary">送信</button>
+        <button id="clearBtn" type="button" class="mini-action-btn secondary">クリア</button>
+        <div id="status" class="status-text"></div>
+      </div>
+    </div>
   </div>
 
-  <script src="auth.js"></script>
-  <script>
-    async function doLogin() {
-      const pin = document.getElementById("pin").value.trim();
-      const msg = document.getElementById("msg");
-      msg.textContent = "";
-
-      if (!/^\d{4}$/.test(pin)) {
-        msg.textContent = "PINは4桁の数字で入力してください。";
-        return;
-      }
-
-      try {
-        const user = await authLogin(pin);
-
-        if (user.role === "drafter") {
-          location.href = "./起案者/index.html";
-          return;
-        }
-        if (user.role === "approverA" || user.role === "approverB") {
-          location.href = "./承認者/approve.html";
-          return;
-        }
-        if (user.role === "admin") {
-          location.href = "./保管/approved.html";
-          return;
-        }
-
-        msg.textContent = "遷移先が設定されていません。";
-      } catch (err) {
-        msg.textContent = err.message || "ログインに失敗しました。";
-      }
-    }
-
-    document.getElementById("loginBtn").addEventListener("click", doLogin);
-    document.getElementById("pin").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") doLogin();
-    });
-
-    // すでにログイン済みなら自動遷移
-    const auth = getAuth();
-    if (auth?.role === "drafter") location.href = "./起案者/index.html";
-    if (auth?.role === "approverA" || auth?.role === "approverB") location.href = "./承認者/approve.html";
-    if (auth?.role === "admin") location.href = "./保管/approved.html";
-  </script>
+  <script src="script.js?v=20260308-05"></script>
 </body>
 </html>

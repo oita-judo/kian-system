@@ -61,13 +61,13 @@ function appendAuth(payload = {}) {
 
 function logoutToRoot() {
   clearAuth();
-  location.href = "../index.html";
+  location.href = "/kian-system/";
 }
 
 function requirePageAuth(allowedRoles) {
   const auth = getAuth();
   if (!auth || !allowedRoles.includes(auth.role)) {
-    location.href = "../index.html";
+    location.href = "/kian-system/";
     return null;
   }
   return auth;

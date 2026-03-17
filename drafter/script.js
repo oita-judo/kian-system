@@ -42,7 +42,7 @@ async function api(payload) {
   const res = await fetch(GAS_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(appendAuth(payload))
   });
   const text = await res.text();
   try {
@@ -548,6 +548,15 @@ function bindSummaryButtons() {
 }
 
 window.addEventListener("load", async () => {
+    const auth = requirePageAuth(["drafter", "admin"]);
+  if (!auth) return;
+
+  if ($("authUserText")) {
+    $("authUserText").textContent = `${auth.name}（${auth.role}）`;
+  }
+  if ($("logoutBtn")) {
+    $("logoutBtn").addEventListener("click", logoutToRoot);
+  }
   applyTypeUI();
   bindSeiriNoRule();
   renderSelectedFiles();

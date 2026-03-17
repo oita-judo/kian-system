@@ -20,7 +20,7 @@ async function api(payload) {
   const res = await fetch(GAS_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(appendAuth(payload))
   });
 
   const text = await res.text();
@@ -183,6 +183,17 @@ async function reloadAll() {
 /* ---------------- 初期化 ---------------- */
 
 window.addEventListener("load", async () => {
+  const auth = requirePageAuth(["admin"]);
+  if (!auth) return;
+
+  if ($("authUserText")) {
+    $("authUserText").textContent = `${auth.name}（${auth.role}）`;
+  }
+
+  if ($("logoutBtn")) {
+    $("logoutBtn").addEventListener("click", logoutToRoot);
+  }
+
   document.querySelectorAll(".filter-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));

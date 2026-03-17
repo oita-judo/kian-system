@@ -9,6 +9,28 @@ body {
   font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
 }
 
+.auth-topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:10px 16px;
+  background:#eef4ff;
+  border-bottom:1px solid #cfd8e3;
+}
+
+.auth-topbar button{
+  height:40px;
+  padding:0 14px;
+  border:none;
+  border-radius:10px;
+  background:#475569;
+  color:#fff;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+}
+
 .container {
   width: min(1460px, calc(100% - 32px));
   margin: 0 auto;
@@ -157,6 +179,11 @@ body {
   }
 
   .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .auth-topbar {
     flex-direction: column;
     align-items: flex-start;
   }

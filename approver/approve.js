@@ -1,6 +1,6 @@
 // ================================
 // approve.js
-// 承認 + 差し戻し対応版　
+// 承認 + 差し戻し対応版 + PIN認証対応
 // ================================
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzwiLcSMXpXxQD3Z17X8CnipLfueqd9kHPHBPYKvowO5SxzYZStxCtI0qhh-mfEFO1ndA/exec";
 
@@ -18,6 +18,24 @@ function setMsg(msg){
   if ($("msg")) $("msg").textContent = msg || "";
 }
 
+function currentRole_(){
+  const auth = getAuth();
+  return auth?.role || "";
+}
+
+function currentUserName_(){
+  const auth = getAuth();
+  return auth?.name || "";
+}
+
+function canOperateSide_(side){
+  const role = currentRole_();
+  if(role === "admin") return true;
+  if(side === "A" && role === "approverA") return true;
+  if(side === "B" && role === "approverB") return true;
+  return false;
+}
+
 // ================================
 // API
 // ================================
@@ -27,7 +45,7 @@ async function api_(payload){
     headers:{
       "Content-Type":"text/plain;charset=utf-8"
     },
-    body:JSON.stringify(payload)
+    body:JSON.stringify(appendAuth(payload))
   });
 
   const text = await res.text();
@@ -127,6 +145,13 @@ function makeCard_(item){
   const bDone = !!item.approverB;
   const pdfGrid = makePdfGrid_(item);
 
+  const canA = canOperateSide_("A");
+  const canB = canOperateSide_("B");
+  const myName = esc(currentUserName_());
+
+  const disableA = aDone || !canA;
+  const disableB = bDone || !canB;
+
   return `
 <div class="cardItem">
   <div class="cardHead">
@@ -163,7 +188,7 @@ function makeCard_(item){
   </div>
 
   <div class="twoApprovers">
-    <div class="approverBox ${aDone ? "doneBox" : ""}">
+    <div class="approverBox ${aDone ? "doneBox" : ""} ${!canA ? "side-disabled" : ""}">
       <strong>承認者A</strong>
 
       <label>氏名</label>
@@ -171,36 +196,37 @@ function makeCard_(item){
         id="nameA_${esc(item.kianId)}"
         type="text"
         placeholder="会長名を入力"
-        ${aDone ? "disabled" : ""}
+        value="${canA && !aDone ? myName : esc(item.approverA || "")}"
+        ${disableA ? "disabled" : ""}
       >
 
       <label>コメント</label>
       <textarea
         id="commentA_${esc(item.kianId)}"
         rows="3"
-        ${aDone ? "disabled" : ""}
+        ${disableA ? "disabled" : ""}
       ></textarea>
 
       <div class="btnRow">
         <button
           class="approveBtn ${aDone ? "doneBtn" : ""}"
-          ${aDone ? "disabled" : ""}
-          onclick="${aDone ? "" : `approveOne('${esc(item.kianId)}','A')`}"
+          ${disableA ? "disabled" : ""}
+          onclick="${disableA ? "" : `approveOne('${esc(item.kianId)}','A')`}"
         >
           ${aDone ? "A承認済" : "Aとして承認"}
         </button>
 
         <button
           class="returnBtn"
-          ${aDone ? "disabled" : ""}
-          onclick="${aDone ? "" : `returnOne('${esc(item.kianId)}','A')`}"
+          ${disableA ? "disabled" : ""}
+          onclick="${disableA ? "" : `returnOne('${esc(item.kianId)}','A')`}"
         >
           Aとして差し戻し
         </button>
       </div>
     </div>
 
-    <div class="approverBox ${bDone ? "doneBox" : ""}">
+    <div class="approverBox ${bDone ? "doneBox" : ""} ${!canB ? "side-disabled" : ""}">
       <strong>承認者B</strong>
 
       <label>氏名</label>
@@ -208,29 +234,30 @@ function makeCard_(item){
         id="nameB_${esc(item.kianId)}"
         type="text"
         placeholder="理事長名を入力"
-        ${bDone ? "disabled" : ""}
+        value="${canB && !bDone ? myName : esc(item.approverB || "")}"
+        ${disableB ? "disabled" : ""}
       >
 
       <label>コメント</label>
       <textarea
         id="commentB_${esc(item.kianId)}"
         rows="3"
-        ${bDone ? "disabled" : ""}
+        ${disableB ? "disabled" : ""}
       ></textarea>
 
       <div class="btnRow">
         <button
           class="approveBtn ${bDone ? "doneBtn" : ""}"
-          ${bDone ? "disabled" : ""}
-          onclick="${bDone ? "" : `approveOne('${esc(item.kianId)}','B')`}"
+          ${disableB ? "disabled" : ""}
+          onclick="${disableB ? "" : `approveOne('${esc(item.kianId)}','B')`}"
         >
           ${bDone ? "B承認済" : "Bとして承認"}
         </button>
 
         <button
           class="returnBtn"
-          ${bDone ? "disabled" : ""}
-          onclick="${bDone ? "" : `returnOne('${esc(item.kianId)}','B')`}"
+          ${disableB ? "disabled" : ""}
+          onclick="${disableB ? "" : `returnOne('${esc(item.kianId)}','B')`}"
         >
           Bとして差し戻し
         </button>
@@ -279,6 +306,11 @@ async function loadList(){
 // 承認
 // ================================
 async function approveOne(kianId, side){
+  if(!canOperateSide_(side)){
+    setMsg(`承認${side}の権限がありません`);
+    return;
+  }
+
   const name = $(`name${side}_${kianId}`).value.trim();
   const comment = $(`comment${side}_${kianId}`).value.trim();
 
@@ -315,6 +347,11 @@ async function approveOne(kianId, side){
 // 差し戻し
 // ================================
 async function returnOne(kianId, side){
+  if(!canOperateSide_(side)){
+    setMsg(`差し戻し${side}の権限がありません`);
+    return;
+  }
+
   const name = $(`name${side}_${kianId}`).value.trim();
   const comment = $(`comment${side}_${kianId}`).value.trim();
 
@@ -358,4 +395,18 @@ async function returnOne(kianId, side){
 
 window.approveOne = approveOne;
 window.returnOne = returnOne;
-window.addEventListener("load", loadList);
+
+window.addEventListener("load", async () => {
+  const auth = requirePageAuth(["approverA", "approverB", "admin"]);
+  if(!auth) return;
+
+  if($("authUserText")){
+    $("authUserText").textContent = `${auth.name}（${auth.role}）`;
+  }
+
+  if($("logoutBtn")){
+    $("logoutBtn").addEventListener("click", logoutToRoot);
+  }
+
+  await loadList();
+});

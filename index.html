@@ -89,15 +89,15 @@
         const user = await authLogin(pin);
 
         if (user.role === "drafter") {
-          location.href = "./起案者/index.html";
+          location.href = "./drafter/index.html";
           return;
         }
         if (user.role === "approverA" || user.role === "approverB") {
-          location.href = "./承認者/approve.html";
+          location.href = "./approver/index.html";
           return;
         }
         if (user.role === "admin") {
-          location.href = "./保管/approved.html";
+          location.href = "./archive/index.html";
           return;
         }
 
@@ -114,9 +114,9 @@
 
     // すでにログイン済みなら自動遷移
     const auth = getAuth();
-    if (auth?.role === "drafter") location.href = "./起案者/index.html";
-    if (auth?.role === "approverA" || auth?.role === "approverB") location.href = "./承認者/approve.html";
-    if (auth?.role === "admin") location.href = "./保管/approved.html";
+    if (auth?.role === "drafter") location.href = "./drafter/index.html";
+    if (auth?.role === "approverA" || auth?.role === "approverB") location.href = "./approver/index.html";
+    if (auth?.role === "admin") location.href = "./archive/index.html";
   </script>
 </body>
 </html>

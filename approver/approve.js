@@ -2,7 +2,7 @@
 // approve.js
 // 承認 + 差し戻し対応版 + PIN認証対応
 // ================================
-const GAS_URL = "https://script.google.com/macros/s/AKfycbxAFwRbhcNFfd2p5PmrzyGis7cS0p90Z0UMsHD0gCf31ZP945ZjQuyiC-22SlXx4_QX/exec";
+//const GAS_URL = "https://script.google.com/macros/s/AKfycbxAFwRbhcNFfd2p5PmrzyGis7cS0p90Z0UMsHD0gCf31ZP945ZjQuyiC-22SlXx4_QX/exec";
 
 function $(id){ return document.getElementById(id); }
 

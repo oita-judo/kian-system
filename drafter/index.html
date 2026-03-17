@@ -8,6 +8,10 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="auth-topbar">
+  <span>ログイン中: <strong id="authUserText"></strong></span>
+  <button type="button" id="logoutBtn">ログアウト</button>
+</div>
   <div class="container">
     <div class="title-row">
   <h1 class="page-title">大分県柔道連盟　文書起案システム</h1>
@@ -214,7 +218,7 @@
       </div>
     </div>
   </div>
-
-  <script src="script.js?v=20260308-05"></script>
+<script src="../auth.js"></script>
+<script src="script.js?v=20260308-05"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 //2026.3.17版
-const GAS_URL = "https://script.google.com/macros/s/AKfycbwObYx7yAgc4w42po_HLfOvQ5A0ZaMSBDzvhZvYZmscFzdgPGNNsxXTKObVtSd5r_RaKQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyEpViWo170ynvn-b-9Q1x8xmR3TFAc7in03nvu4hwxdMEf1OcYzlAXFy78n_R9_xgnEg/exec";
 const AUTH_KEY = "kian_auth";
 
 function setAuth(auth) {

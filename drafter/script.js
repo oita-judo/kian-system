@@ -56,7 +56,34 @@ async function api(payload) {
     throw new Error("GASの応答がJSONではありません: " + text);
   }
 }
+async function loadCounts() {
+  try {
+    const auth = getAuth();
 
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "getStatusCounts",
+        authPin: auth?.pin
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      console.error("count error", data);
+      return;
+    }
+
+    document.getElementById("countDraft").textContent = data.draft || 0;
+    document.getElementById("countPending").textContent = data.pending || 0;
+    document.getElementById("countReturned").textContent = data.returned || 0;
+    document.getElementById("countApproved").textContent = data.approved || 0;
+
+  } catch (err) {
+    console.error(err);
+  }
+}
 /* ---------- UI ---------- */
 
 function syncCommonToHiddenFields() {

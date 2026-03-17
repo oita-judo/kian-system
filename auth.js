@@ -1,3 +1,4 @@
+//2026.3.17版
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzwiLcSMXpXxQD3Z17X8CnipLfueqd9kHPHBPYKvowO5SxzYZStxCtI0qhh-mfEFO1ndA/exec";
 const AUTH_KEY = "kian_auth";
 

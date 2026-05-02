@@ -1,5 +1,4 @@
-//const GAS_URL = "https://script.google.com/macros/s/AKfycbxAFwRbhcNFfd2p5PmrzyGis7cS0p90Z0UMsHD0gCf31ZP945ZjQuyiC-22SlXx4_QX/exec";
-// drafter/script.js 改善版
+// drafter/script.js 最終高速版
 
 const SUMMARY_CONFIG = {
   draft:    { countId: "countDraft",    wrapId: "draftListWrap",    listId: "draftSheetList" },
@@ -15,7 +14,6 @@ const caches = {
   approved: []
 };
 
-let listsLoaded = false;
 let selectedFiles = [];
 
 const $ = (id) => document.getElementById(id);
@@ -327,8 +325,6 @@ async function send() {
     return;
   }
 
-  setStatus("送信中...");
-
   const payload = await buildPayload();
   const msg = validate(payload);
 
@@ -353,7 +349,7 @@ async function send() {
   }
 
   clearForm();
-  await refreshAfterChange();
+  await loadAllFast();
   setStatus("送信しました");
 }
 
@@ -384,31 +380,38 @@ async function saveDraftByNo() {
     return;
   }
 
-  await refreshAfterChange();
+  await loadAllFast();
   setStatus("下書きを保存しました");
 }
 
-/* ---------- counts / lists ---------- */
+/* ---------- 高速読み込み ---------- */
 
-async function loadStatusCounts() {
-  const data = await api({ action: "getStatusCounts" });
+async function loadAllFast() {
+  const data = await api({ action: "getAllDataFast" });
 
   if (!data.ok) {
-    setStatus("件数取得に失敗しました");
+    setStatus("データ取得に失敗しました");
     return;
   }
 
-  const counts = {
-    countDraft: data.draft ?? 0,
-    countPending: data.pending ?? 0,
-    countReturned: data.returned ?? 0,
-    countApproved: data.approved ?? 0
-  };
+  const counts = data.counts || {};
 
-  Object.entries(counts).forEach(([id, value]) => {
-    if ($(id)) $(id).textContent = value;
+  if ($("countDraft")) $("countDraft").textContent = counts.draft ?? 0;
+  if ($("countPending")) $("countPending").textContent = counts.pending ?? 0;
+  if ($("countReturned")) $("countReturned").textContent = counts.returned ?? 0;
+  if ($("countApproved")) $("countApproved").textContent = counts.approved ?? 0;
+
+  caches.draft = data.draftItems || [];
+  caches.pending = data.pendingItems || [];
+  caches.returned = data.returnedItems || [];
+  caches.approved = data.approvedItems || [];
+
+  Object.keys(SUMMARY_CONFIG).forEach(mode => {
+    renderStatusTable(mode, caches[mode]);
   });
 }
+
+/* ---------- lists ---------- */
 
 function actionButtons(mode, item, index) {
   const buttons = [];
@@ -462,56 +465,16 @@ function renderStatusTable(mode, items) {
   `;
 }
 
-async function loadAllStatusLists(force = false) {
-  if (listsLoaded && !force) return;
-
-  const data = await api({ action: "listAllStatuses" });
-
-  if (!data.ok) {
-    setStatus("一覧の取得に失敗しました");
-    return;
-  }
-
-  caches.draft = data.draftItems || [];
-  caches.pending = data.pendingItems || [];
-  caches.returned = data.returnedItems || [];
-  caches.approved = data.approvedItems || [];
-
-  Object.keys(SUMMARY_CONFIG).forEach(mode => {
-    renderStatusTable(mode, caches[mode]);
-  });
-
-  listsLoaded = true;
-}
-
-async function showList(mode) {
+function showList(mode) {
   const cfg = SUMMARY_CONFIG[mode];
   if (!cfg) return;
-
-  await runWithLoading(null, "一覧を読み込んでいます...", async () => {
-    await loadAllStatusLists(false);
-    $(cfg.wrapId).style.display = "";
-  });
+  $(cfg.wrapId).style.display = "";
 }
 
 function hideList(mode) {
   const cfg = SUMMARY_CONFIG[mode];
   if (!cfg) return;
   $(cfg.wrapId).style.display = "none";
-}
-
-async function refreshAfterChange() {
-  listsLoaded = false;
-  await loadStatusCounts();
-
-  const anyListOpen = Object.values(SUMMARY_CONFIG).some(cfg => {
-    const el = $(cfg.wrapId);
-    return el && el.style.display !== "none";
-  });
-
-  if (anyListOpen) {
-    await loadAllStatusLists(true);
-  }
 }
 
 /* ---------- row operations ---------- */
@@ -564,7 +527,7 @@ window.deleteDraftItem = async function(index) {
       return;
     }
 
-    await refreshAfterChange();
+    await loadAllFast();
     setStatus("下書きを削除しました");
   });
 };
@@ -586,7 +549,7 @@ window.markApprovedDone = async function(kianId) {
       return;
     }
 
-    await refreshAfterChange();
+    await loadAllFast();
     setStatus("確定しました");
   });
 };
@@ -655,7 +618,7 @@ window.addEventListener("load", async () => {
 
   bindSummaryButtons();
 
-  await runWithLoading(null, "件数を読み込んでいます...", async () => {
-    await loadStatusCounts();
+  await runWithLoading(null, "データを読み込んでいます...", async () => {
+    await loadAllFast();
   });
 });

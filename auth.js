@@ -1,4 +1,4 @@
-//2026.3.17版
+// 2026.5 改善版
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyrZqPhUDml9sz0cbz58pIkrH8jhsFFiCrkYkB6jcQ29c8n1hMeHeS7EegRtTBEx9AN/exec";
 const AUTH_KEY = "kian_auth";
 
@@ -19,14 +19,32 @@ function clearAuth() {
 }
 
 async function authLogin(pin) {
-  const res = await fetch(GAS_URL, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({
-      action: "login",
-      authPin: pin
-    })
-  });
+  // すでに同じPINでログイン済みならGAS通信しない
+  const current = getAuth();
+  if (current && current.pin === pin && current.role) {
+    return current;
+  }
+
+  let res;
+
+  try {
+    res = await fetch(GAS_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify({
+        action: "login",
+        authPin: pin
+      })
+    });
+  } catch (err) {
+    throw new Error("通信に失敗しました。しばらくしてから再度お試しください。");
+  }
+
+  if (!res.ok) {
+    throw new Error("サーバーに接続できませんでした。");
+  }
 
   const text = await res.text();
   let data;
@@ -42,9 +60,9 @@ async function authLogin(pin) {
   }
 
   const auth = {
-    pin,
-    role: data.role,
-    name: data.name
+    pin: pin,
+    role: data.role || "",
+    name: data.name || ""
   };
 
   setAuth(auth);
@@ -53,6 +71,7 @@ async function authLogin(pin) {
 
 function appendAuth(payload = {}) {
   const auth = getAuth();
+
   return {
     ...payload,
     authPin: auth?.pin || ""
@@ -66,9 +85,11 @@ function logoutToRoot() {
 
 function requirePageAuth(allowedRoles) {
   const auth = getAuth();
+
   if (!auth || !allowedRoles.includes(auth.role)) {
     location.href = "/kian-system/";
     return null;
   }
+
   return auth;
 }

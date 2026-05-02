@@ -1,5 +1,4 @@
 //const GAS_URL = "https://script.google.com/macros/s/AKfycbxAFwRbhcNFfd2p5PmrzyGis7cS0p90Z0UMsHD0gCf31ZP945ZjQuyiC-22SlXx4_QX/exec";
-
 const $ = (id) => document.getElementById(id);
 
 function esc(s) {
@@ -16,6 +15,31 @@ function setMsg(msg) {
 
 let currentType = "";
 
+/* ===== ローディング ===== */
+function showLoading(text="処理中です..."){
+  const el = $("loadingOverlay");
+  const label = $("loadingText");
+  if(label) label.textContent = text;
+  if(el) el.classList.remove("hidden");
+}
+
+function hideLoading(){
+  const el = $("loadingOverlay");
+  if(el) el.classList.add("hidden");
+}
+
+async function runWithLoading(btn,text,fn){
+  try{
+    showLoading(text);
+    if(btn) btn.disabled = true;
+    await fn();
+  }finally{
+    if(btn) btn.disabled = false;
+    hideLoading();
+  }
+}
+
+/* ===== API ===== */
 async function api(payload) {
   const res = await fetch(GAS_URL, {
     method: "POST",
@@ -24,11 +48,7 @@ async function api(payload) {
   });
 
   const text = await res.text();
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error("JSONではない応答: " + text);
-  }
+  return JSON.parse(text);
 }
 
 function currentSort() {
@@ -38,71 +58,49 @@ function currentSort() {
   };
 }
 
-/* ---------------- 承認済（決定前） ---------------- */
+/* ===== 描画 ===== */
 
 function renderApprovedBefore(items) {
   const body = $("approvedBeforeBody");
-  if (!body) return;
-
-  if (!items || items.length === 0) {
+  if (!items?.length) {
     body.innerHTML = `<tr><td colspan="7">承認済（決定前）はありません</td></tr>`;
     return;
   }
 
   body.innerHTML = items.map(item => `
     <tr>
-      <td>${esc(item.createdAt || "")}</td>
-      <td>${esc(item.typeLabel || "")}</td>
-      <td>${esc(item.seiriNo || "")}</td>
-      <td>${esc(item.title || "")}</td>
-      <td>${esc(item.writer || "")}</td>
-      <td>${esc(item.updatedAt || "")}</td>
+      <td>${esc(item.createdAt)}</td>
+      <td>${esc(item.typeLabel)}</td>
+      <td>${esc(item.seiriNo)}</td>
+      <td>${esc(item.title)}</td>
+      <td>${esc(item.writer)}</td>
+      <td>${esc(item.updatedAt)}</td>
       <td>
-        <button class="decide-btn" type="button" onclick="markDone('${esc(item.kianId)}')">決定</button>
+        <button class="decide-btn" onclick="markDone('${esc(item.kianId)}')">決定</button>
       </td>
     </tr>
   `).join("");
 }
 
-async function loadApprovedBefore() {
-  const { sortKey, sortDir } = currentSort();
-
-  const data = await api({
-    action: "listApproved",
-    type: currentType,
-    sortKey,
-    sortDir
-  });
-
-  if (!data.ok) {
-    throw new Error(data.message || "listApproved failed");
-  }
-
-  renderApprovedBefore(data.items || []);
-}
-
-/* ---------------- 決定済 ---------------- */
-
 function renderDone(items) {
   const body = $("doneBody");
-  if (!body) return;
 
-  if (!items || items.length === 0) {
+  if (!items?.length) {
     body.innerHTML = `<tr><td colspan="7">決定済はありません</td></tr>`;
     return;
   }
 
   body.innerHTML = items.map(item => `
     <tr>
-      <td>${esc(item.createdAt || "")}</td>
-      <td>${esc(item.typeLabel || "")}</td>
-      <td>${esc(item.seiriNo || "")}</td>
-      <td>${esc(item.title || "")}</td>
-      <td>${esc(item.writer || "")}</td>
-      <td>${esc(item.doneAt || item.updatedAt || "")}</td>
+      <td>${esc(item.createdAt)}</td>
+      <td>${esc(item.typeLabel)}</td>
+      <td>${esc(item.seiriNo)}</td>
+      <td>${esc(item.title)}</td>
+      <td>${esc(item.writer)}</td>
+      <td>${esc(item.doneAt || item.updatedAt)}</td>
       <td>
         ${item.finalPdfUrl
-          ? `<a class="pdf-link" href="${esc(item.finalPdfUrl)}" target="_blank" rel="noopener noreferrer">PDFリンク</a>`
+          ? `<a href="${esc(item.finalPdfUrl)}" target="_blank">PDF</a>`
           : ""
         }
       </td>
@@ -110,102 +108,76 @@ function renderDone(items) {
   `).join("");
 }
 
-async function loadDoneList() {
-  const { sortKey, sortDir } = currentSort();
+/* ===== 一括取得（高速化） ===== */
+async function loadAllFast(){
 
-  const data = await api({
-    action: "list",
-    status: "done",
-    limit: 500
+  await runWithLoading(null,"データを読み込んでいます...",async ()=>{
+
+    const data = await api({ action:"getAllDataFast" });
+
+    if(!data.ok){
+      setMsg("取得失敗");
+      return;
+    }
+
+    let approved = data.approvedItems || [];
+    let done = data.doneItems || [];
+
+    if(currentType){
+      approved = approved.filter(x => x.type === currentType);
+      done = done.filter(x => x.type === currentType);
+    }
+
+    renderApprovedBefore(approved);
+    renderDone(done);
+
+    setMsg("");
   });
-
-  if (!data.ok) {
-    throw new Error(data.message || "done list failed");
-  }
-
-  let items = data.items || [];
-
-  if (currentType) {
-    items = items.filter(x => String(x.type) === currentType);
-  }
-
-  items.sort((a, b) => {
-    const av = String(a[sortKey] ?? "");
-    const bv = String(b[sortKey] ?? "");
-    const cmp = av.localeCompare(bv, "ja");
-    return sortDir === "asc" ? cmp : -cmp;
-  });
-
-  renderDone(items);
 }
 
-/* ---------------- 決定 ---------------- */
+/* ===== 決定 ===== */
+async function markDone(kianId){
 
-async function markDone(kianId) {
-  if (!confirm("この承認済データを決定しますか？")) return;
+  if(!confirm("この承認済データを決定しますか？")) return;
 
-  setMsg("決定処理中...");
+  await runWithLoading(null,"決定処理中...",async ()=>{
 
-  try {
     const data = await api({
-      action: "markDone",
+      action:"markDone",
       kianId
     });
 
-    if (!data.ok) {
-      setMsg("失敗: " + (data.message || "unknown"));
+    if(!data.ok){
+      setMsg("失敗");
       return;
     }
 
     setMsg("決定しました");
-    await reloadAll();
-
-  } catch (err) {
-    setMsg("エラー: " + err);
-  }
+    await loadAllFast();
+  });
 }
 window.markDone = markDone;
 
-/* ---------------- 全再読込 ---------------- */
-
-async function reloadAll() {
-  setMsg("読み込み中...");
-
-  try {
-    await loadApprovedBefore();
-    await loadDoneList();
-    setMsg("");
-  } catch (err) {
-    setMsg("エラー: " + err);
-  }
-}
-
-/* ---------------- 初期化 ---------------- */
-
+/* ===== 初期化 ===== */
 window.addEventListener("load", async () => {
+
   const auth = requirePageAuth(["admin"]);
   if (!auth) return;
 
-  if ($("authUserText")) {
-    $("authUserText").textContent = `${auth.name}（${auth.role}）`;
-  }
-
-  if ($("logoutBtn")) {
-    $("logoutBtn").addEventListener("click", logoutToRoot);
-  }
+  $("authUserText").textContent = `${auth.name}（${auth.role}）`;
 
   document.querySelectorAll(".filter-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentType = btn.dataset.type || "";
-      await reloadAll();
+      await loadAllFast();
     });
   });
 
-  if ($("sortKey")) $("sortKey").addEventListener("change", reloadAll);
-  if ($("sortDir")) $("sortDir").addEventListener("change", reloadAll);
-  if ($("reloadBtn")) $("reloadBtn").addEventListener("click", reloadAll);
+  $("sortKey").addEventListener("change", loadAllFast);
+  $("sortDir").addEventListener("change", loadAllFast);
+  $("reloadBtn").addEventListener("click", loadAllFast);
 
-  await reloadAll();
+  await loadAllFast();
 });

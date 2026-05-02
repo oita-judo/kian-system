@@ -7,6 +7,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="loadingOverlay" class="loading-overlay hidden">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <div id="loadingText">処理中です...</div>
+  </div>
+</div>
   <div class="auth-topbar">
     <span>ログイン中: <strong id="authUserText"></strong></span>
     <button type="button" id="logoutBtn" onclick="logoutToRoot()">ログアウト</button>

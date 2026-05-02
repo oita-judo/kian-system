@@ -1,4 +1,5 @@
 //const GAS_URL = "https://script.google.com/macros/s/AKfycbxAFwRbhcNFfd2p5PmrzyGis7cS0p90Z0UMsHD0gCf31ZP945ZjQuyiC-22SlXx4_QX/exec";
+// drafter/script.js 改善版
 
 const SUMMARY_CONFIG = {
   draft:    { countId: "countDraft",    wrapId: "draftListWrap",    listId: "draftSheetList" },
@@ -14,10 +15,34 @@ const caches = {
   approved: []
 };
 
+let listsLoaded = false;
 let selectedFiles = [];
 
 const $ = (id) => document.getElementById(id);
 const v = (id) => ($(id)?.value || "").trim();
+
+function showLoading(text = "処理中です...") {
+  const el = $("loadingOverlay");
+  const label = $("loadingText");
+  if (label) label.textContent = text;
+  if (el) el.classList.remove("hidden");
+}
+
+function hideLoading() {
+  const el = $("loadingOverlay");
+  if (el) el.classList.add("hidden");
+}
+
+async function runWithLoading(btn, text, fn) {
+  try {
+    showLoading(text);
+    if (btn) btn.disabled = true;
+    await fn();
+  } finally {
+    if (btn) btn.disabled = false;
+    hideLoading();
+  }
+}
 
 function setStatus(msg) {
   const el = $("status");
@@ -49,41 +74,16 @@ async function api(payload) {
     headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(appendAuth(payload))
   });
+
   const text = await res.text();
+
   try {
     return JSON.parse(text);
   } catch {
     throw new Error("GASの応答がJSONではありません: " + text);
   }
 }
-async function loadCounts() {
-  try {
-    const auth = getAuth();
 
-    const res = await fetch(GAS_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "getStatusCounts",
-        authPin: auth?.pin
-      })
-    });
-
-    const data = await res.json();
-
-    if (!data.ok) {
-      console.error("count error", data);
-      return;
-    }
-
-    document.getElementById("countDraft").textContent = data.draft || 0;
-    document.getElementById("countPending").textContent = data.pending || 0;
-    document.getElementById("countReturned").textContent = data.returned || 0;
-    document.getElementById("countApproved").textContent = data.approved || 0;
-
-  } catch (err) {
-    console.error(err);
-  }
-}
 /* ---------- UI ---------- */
 
 function syncCommonToHiddenFields() {
@@ -130,6 +130,7 @@ function applyTypeUI() {
 function bindSeiriNoRule() {
   const el = $("seiriNo");
   if (!el) return;
+
   el.addEventListener("input", () => {
     el.value = el.value.replace(/[^0-9]/g, "").replace(/^0+/, "");
   });
@@ -237,6 +238,7 @@ async function buildPayload() {
   syncCommonToHiddenFields();
 
   const type = $("type")?.value || "";
+
   const payload = {
     action: "submit",
     type,
@@ -289,6 +291,7 @@ function validate(payload) {
     if (!payload.amount) return "未入力：支払金額";
     if (!payload.payee) return "未入力：支払先";
   }
+
   if (payload.type === "shuunyuu") {
     if (!payload.amount) return "未入力：収入金額";
     if (!payload.payer) return "未入力：納入者";
@@ -313,104 +316,99 @@ function clearForm() {
   clearSelectedFiles();
   showReturnComments(null);
   applyTypeUI();
+  setStatus("");
 }
 
 async function send() {
   const auth = getAuth();
+
   if (!auth || !["drafter", "admin"].includes(auth.role)) {
     setStatus("送信権限がありません。");
     return;
   }
 
   setStatus("送信中...");
-  try {
-    const payload = await buildPayload();
-    const msg = validate(payload);
-    if (msg) {
-      setStatus(msg);
-      return;
-    }
 
-    const data = await api(payload);
-    if (!data.ok) {
-      setStatus("送信失敗: " + (data.message || "unknown"));
-      return;
-    }
+  const payload = await buildPayload();
+  const msg = validate(payload);
 
-    const draftNo = v("draftNo");
-    if (draftNo) {
-      try {
-        await api({ action: "deleteDraft", draftNo });
-      } catch {}
-    }
-
-    clearForm();
-    await loadStatusCounts();
-    setStatus("送信しました");
-  } catch (err) {
-    setStatus("通信エラー: " + err);
+  if (msg) {
+    setStatus(msg);
+    return;
   }
+
+  const data = await api(payload);
+
+  if (!data.ok) {
+    setStatus("送信失敗: " + (data.message || "unknown"));
+    return;
+  }
+
+  const draftNo = v("draftNo");
+
+  if (draftNo) {
+    try {
+      await api({ action: "deleteDraft", draftNo });
+    } catch {}
+  }
+
+  clearForm();
+  await refreshAfterChange();
+  setStatus("送信しました");
 }
 
 async function saveDraftByNo() {
   const auth = getAuth();
+
   if (!auth || !["drafter", "admin"].includes(auth.role)) {
     setStatus("下書き保存の権限がありません。");
     return;
   }
 
   const draftNo = v("draftNo");
+
   if (!draftNo) {
     setStatus("下書き番号を入力してください。");
     return;
   }
 
-  try {
-    const payload = await buildPayload();
-    payload.action = "saveDraft";
-    payload.draftNo = draftNo;
-    payload.attachments = [];
+  const payload = await buildPayload();
+  payload.action = "saveDraft";
+  payload.draftNo = draftNo;
+  payload.attachments = [];
 
-    const data = await api(payload);
-    if (!data.ok) {
-      setStatus("下書き保存失敗: " + (data.message || "unknown"));
-      return;
-    }
+  const data = await api(payload);
 
-    await loadStatusCounts();
-    setStatus("下書きを保存しました");
-  } catch (err) {
-    setStatus("下書き保存エラー: " + err);
+  if (!data.ok) {
+    setStatus("下書き保存失敗: " + (data.message || "unknown"));
+    return;
   }
+
+  await refreshAfterChange();
+  setStatus("下書きを保存しました");
 }
 
-/* ---------- counts ---------- */
+/* ---------- counts / lists ---------- */
 
 async function loadStatusCounts() {
-  try {
-    const data = await api({ action: "getStatusCounts" });
-    if (!data.ok) {
-      setStatus("件数取得に失敗しました");
-      return;
-    }
+  const data = await api({ action: "getStatusCounts" });
 
-    const counts = {
-      countDraft: data.draft ?? 0,
-      countPending: data.pending ?? 0,
-      countReturned: data.returned ?? 0,
-      countApproved: data.approved ?? 0
-    };
-
-    Object.entries(counts).forEach(([id, value]) => {
-      if ($(id)) $(id).textContent = value;
-    });
-  } catch (err) {
-    console.error(err);
+  if (!data.ok) {
     setStatus("件数取得に失敗しました");
+    return;
   }
-}
 
-/* ---------- lists ---------- */
+  const counts = {
+    countDraft: data.draft ?? 0,
+    countPending: data.pending ?? 0,
+    countReturned: data.returned ?? 0,
+    countApproved: data.approved ?? 0
+  };
+
+  Object.entries(counts).forEach(([id, value]) => {
+    if ($(id)) $(id).textContent = value;
+  });
+}
 
 function actionButtons(mode, item, index) {
   const buttons = [];
@@ -418,11 +416,13 @@ function actionButtons(mode, item, index) {
   if (mode === "draft" || mode === "returned") {
     buttons.push(`<button class="mini-btn primary" onclick="restoreItem('${mode}', ${index})">復元</button>`);
   }
+
   if (mode === "draft") {
     buttons.push(`<button class="mini-btn danger" onclick="deleteDraftItem(${index})">削除</button>`);
   }
+
   if (mode === "approved" && canMarkDone_()) {
-    buttons.push(`<button class="mini-btn done" onclick="markApprovedDone('${item.kianId}')">確定</button>`);
+    buttons.push(`<button class="mini-btn done" onclick="markApprovedDone('${escapeHtml(item.kianId)}')">確定</button>`);
   }
 
   return buttons.join("");
@@ -462,39 +462,56 @@ function renderStatusTable(mode, items) {
   `;
 }
 
-async function loadAllStatusLists() {
-  try {
-    const data = await api({ action: "listAllStatuses" });
-    if (!data.ok) {
-      setStatus("一覧の取得に失敗しました");
-      return;
-    }
+async function loadAllStatusLists(force = false) {
+  if (listsLoaded && !force) return;
 
-    caches.draft = data.draftItems || [];
-    caches.pending = data.pendingItems || [];
-    caches.returned = data.returnedItems || [];
-    caches.approved = data.approvedItems || [];
+  const data = await api({ action: "listAllStatuses" });
 
-    Object.keys(SUMMARY_CONFIG).forEach(mode => {
-      renderStatusTable(mode, caches[mode]);
-    });
-  } catch (err) {
-    console.error(err);
+  if (!data.ok) {
     setStatus("一覧の取得に失敗しました");
+    return;
   }
+
+  caches.draft = data.draftItems || [];
+  caches.pending = data.pendingItems || [];
+  caches.returned = data.returnedItems || [];
+  caches.approved = data.approvedItems || [];
+
+  Object.keys(SUMMARY_CONFIG).forEach(mode => {
+    renderStatusTable(mode, caches[mode]);
+  });
+
+  listsLoaded = true;
 }
 
 async function showList(mode) {
   const cfg = SUMMARY_CONFIG[mode];
   if (!cfg) return;
-  await loadAllStatusLists();
-  $(cfg.wrapId).style.display = "";
+
+  await runWithLoading(null, "一覧を読み込んでいます...", async () => {
+    await loadAllStatusLists(false);
+    $(cfg.wrapId).style.display = "";
+  });
 }
 
 function hideList(mode) {
   const cfg = SUMMARY_CONFIG[mode];
   if (!cfg) return;
   $(cfg.wrapId).style.display = "none";
+}
+
+async function refreshAfterChange() {
+  listsLoaded = false;
+  await loadStatusCounts();
+
+  const anyListOpen = Object.values(SUMMARY_CONFIG).some(cfg => {
+    const el = $(cfg.wrapId);
+    return el && el.style.display !== "none";
+  });
+
+  if (anyListOpen) {
+    await loadAllStatusLists(true);
+  }
 }
 
 /* ---------- row operations ---------- */
@@ -536,20 +553,20 @@ window.restoreItem = function(mode, index) {
 window.deleteDraftItem = async function(index) {
   const item = caches.draft[index];
   if (!item) return;
+
   if (!confirm(`下書き（番号：${item.draftNo}）を削除しますか？`)) return;
 
-  try {
+  await runWithLoading(null, "下書きを削除しています...", async () => {
     const data = await api({ action: "deleteDraft", draftNo: item.draftNo });
+
     if (!data.ok) {
       setStatus("削除失敗: " + (data.message || "unknown"));
       return;
     }
-    await loadStatusCounts();
-    await loadAllStatusLists();
+
+    await refreshAfterChange();
     setStatus("下書きを削除しました");
-  } catch (err) {
-    setStatus("削除エラー: " + err);
-  }
+  });
 };
 
 window.markApprovedDone = async function(kianId) {
@@ -561,19 +578,17 @@ window.markApprovedDone = async function(kianId) {
   if (!kianId) return;
   if (!confirm("この承認済を確定しますか？")) return;
 
-  try {
-    setStatus("確定処理中...");
+  await runWithLoading(null, "確定処理中です...", async () => {
     const data = await api({ action: "markDone", kianId });
+
     if (!data.ok) {
       setStatus("確定失敗: " + (data.message || "unknown"));
       return;
     }
-    await loadStatusCounts();
-    await loadAllStatusLists();
+
+    await refreshAfterChange();
     setStatus("確定しました");
-  } catch (err) {
-    setStatus("確定エラー: " + err);
-  }
+  });
 };
 
 /* ---------- init ---------- */
@@ -621,10 +636,26 @@ window.addEventListener("load", async () => {
 
   if ($("addFileBtn")) $("addFileBtn").addEventListener("click", addSelectedFile);
   if ($("clearFilesBtn")) $("clearFilesBtn").addEventListener("click", clearSelectedFiles);
-  if ($("saveDraftBtn")) $("saveDraftBtn").addEventListener("click", saveDraftByNo);
-  if ($("sendBtn")) $("sendBtn").addEventListener("click", send);
+
+  if ($("saveDraftBtn")) {
+    $("saveDraftBtn").addEventListener("click", function () {
+      runWithLoading(this, "下書きを保存しています...", saveDraftByNo)
+        .catch(err => setStatus("下書き保存エラー: " + err.message));
+    });
+  }
+
+  if ($("sendBtn")) {
+    $("sendBtn").addEventListener("click", function () {
+      runWithLoading(this, "送信中です。PDFを作成しています...", send)
+        .catch(err => setStatus("送信エラー: " + err.message));
+    });
+  }
+
   if ($("clearBtn")) $("clearBtn").addEventListener("click", clearForm);
 
   bindSummaryButtons();
-  await loadStatusCounts();
+
+  await runWithLoading(null, "件数を読み込んでいます...", async () => {
+    await loadStatusCounts();
+  });
 });

@@ -1,8 +1,9 @@
-// ================================
-// approve.js
-// 承認 + 差し戻し対応版 + PIN認証対応
-// ================================
-//const GAS_URL = "https://script.google.com/macros/s/AKfycbxAFwRbhcNFfd2p5PmrzyGis7cS0p90Z0UMsHD0gCf31ZP945ZjQuyiC-22SlXx4_QX/exec";
+// approve.js 改善版
+// 承認 + 差し戻し + PIN認証 + ローディング対応
+// 会長・理事長名 初期値対応
+
+const DEFAULT_APPROVER_A = "会長　穴井";
+const DEFAULT_APPROVER_B = "理事長　田川";
 
 function $(id){ return document.getElementById(id); }
 
@@ -18,6 +19,31 @@ function setMsg(msg){
   if ($("msg")) $("msg").textContent = msg || "";
 }
 
+/* ===== ローディング ===== */
+function showLoading(text="処理中です..."){
+  const el = $("loadingOverlay");
+  const label = $("loadingText");
+  if(label) label.textContent = text;
+  if(el) el.classList.remove("hidden");
+}
+
+function hideLoading(){
+  const el = $("loadingOverlay");
+  if(el) el.classList.add("hidden");
+}
+
+async function runWithLoading(btn, text, fn){
+  try{
+    showLoading(text);
+    if(btn) btn.disabled = true;
+    await fn();
+  }finally{
+    if(btn) btn.disabled = false;
+    hideLoading();
+  }
+}
+
+/* ===== auth ===== */
 function currentRole_(){
   const auth = getAuth();
   return auth?.role || "";
@@ -36,15 +62,11 @@ function canOperateSide_(side){
   return false;
 }
 
-// ================================
-// API
-// ================================
+/* ===== API ===== */
 async function api_(payload){
   const res = await fetch(GAS_URL,{
     method:"POST",
-    headers:{
-      "Content-Type":"text/plain;charset=utf-8"
-    },
+    headers:{ "Content-Type":"text/plain;charset=utf-8" },
     body:JSON.stringify(appendAuth(payload))
   });
 
@@ -57,9 +79,7 @@ async function api_(payload){
   }
 }
 
-// ================================
-// 履歴文字列
-// ================================
+/* ===== 履歴文字列 ===== */
 function makeApprovalsText_(item){
   const lines = [];
 
@@ -90,9 +110,7 @@ function makeApprovalsText_(item){
   return lines.join("\n");
 }
 
-// ================================
-// PDFグリッド
-// ================================
+/* ===== PDFグリッド ===== */
 function makePdfGrid_(item){
   let html = `<div class="pdfGrid">`;
 
@@ -137,9 +155,7 @@ function makePdfGrid_(item){
   return html;
 }
 
-// ================================
-// カード作成
-// ================================
+/* ===== カード作成 ===== */
 function makeCard_(item){
   const aDone = !!item.approverA;
   const bDone = !!item.approverB;
@@ -147,10 +163,17 @@ function makeCard_(item){
 
   const canA = canOperateSide_("A");
   const canB = canOperateSide_("B");
-  const myName = esc(currentUserName_());
 
   const disableA = aDone || !canA;
   const disableB = bDone || !canB;
+
+  const nameAValue = canA && !aDone
+    ? (item.approverA || DEFAULT_APPROVER_A)
+    : (item.approverA || "");
+
+  const nameBValue = canB && !bDone
+    ? (item.approverB || DEFAULT_APPROVER_B)
+    : (item.approverB || "");
 
   return `
 <div class="cardItem">
@@ -196,7 +219,7 @@ function makeCard_(item){
         id="nameA_${esc(item.kianId)}"
         type="text"
         placeholder="会長名を入力"
-        value="${canA && !aDone ? myName : esc(item.approverA || "")}"
+        value="${esc(nameAValue)}"
         ${disableA ? "disabled" : ""}
       >
 
@@ -234,7 +257,7 @@ function makeCard_(item){
         id="nameB_${esc(item.kianId)}"
         type="text"
         placeholder="理事長名を入力"
-        value="${canB && !bDone ? myName : esc(item.approverB || "")}"
+        value="${esc(nameBValue)}"
         ${disableB ? "disabled" : ""}
       >
 
@@ -268,13 +291,11 @@ function makeCard_(item){
 `;
 }
 
-// ================================
-// 一覧取得
-// ================================
+/* ===== 一覧取得 ===== */
 async function loadList(){
-  setMsg("読み込み中...");
+  await runWithLoading(null, "承認一覧を読み込んでいます...", async () => {
+    setMsg("読み込み中...");
 
-  try{
     const data = await api_({
       action:"list",
       status:"pending",
@@ -296,15 +317,10 @@ async function loadList(){
 
     box.innerHTML = data.items.map(makeCard_).join("");
     setMsg("");
-
-  }catch(err){
-    setMsg("エラー: " + err);
-  }
+  });
 }
 
-// ================================
-// 承認
-// ================================
+/* ===== 承認 ===== */
 async function approveOne(kianId, side){
   if(!canOperateSide_(side)){
     setMsg(`承認${side}の権限がありません`);
@@ -319,9 +335,7 @@ async function approveOne(kianId, side){
     return;
   }
 
-  setMsg("承認送信中...");
-
-  try{
+  await runWithLoading(null, "承認処理中です...", async () => {
     const data = await api_({
       action:"approve",
       kianId,
@@ -337,15 +351,10 @@ async function approveOne(kianId, side){
 
     setMsg("承認しました");
     await loadList();
-
-  }catch(err){
-    setMsg("エラー: " + err);
-  }
+  });
 }
 
-// ================================
-// 差し戻し
-// ================================
+/* ===== 差し戻し ===== */
 async function returnOne(kianId, side){
   if(!canOperateSide_(side)){
     setMsg(`差し戻し${side}の権限がありません`);
@@ -369,9 +378,7 @@ async function returnOne(kianId, side){
     return;
   }
 
-  setMsg("差し戻し送信中...");
-
-  try{
+  await runWithLoading(null, "差し戻し処理中です...", async () => {
     const data = await api_({
       action:"return",
       kianId,
@@ -387,15 +394,13 @@ async function returnOne(kianId, side){
 
     setMsg("差し戻しました");
     await loadList();
-
-  }catch(err){
-    setMsg("エラー: " + err);
-  }
+  });
 }
 
 window.approveOne = approveOne;
 window.returnOne = returnOne;
 
+/* ===== 初期処理 ===== */
 window.addEventListener("load", async () => {
   const auth = requirePageAuth(["approverA", "approverB", "admin"]);
   if(!auth) return;
@@ -408,5 +413,11 @@ window.addEventListener("load", async () => {
     $("logoutBtn").addEventListener("click", logoutToRoot);
   }
 
-  await loadList();
+  try{
+    await loadList();
+  }catch(err){
+    console.error(err);
+    setMsg("エラー: " + err.message);
+    hideLoading();
+  }
 });

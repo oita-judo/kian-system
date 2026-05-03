@@ -8,8 +8,6 @@
 </head>
 
 <body>
-
-  <!-- 処理中表示 -->
   <div id="loadingOverlay" class="loading-overlay hidden">
     <div class="loading-box">
       <div class="spinner"></div>
@@ -27,12 +25,16 @@
 
     <section class="panel">
       <div class="panel-header">
-        <h2>承認済を表示</h2>
+        <div>
+          <h2>承認済を表示</h2>
+          <div id="approvedCount" class="count-badge">件数：-</div>
+        </div>
+        <button id="showApprovedBtn" class="reload-btn" type="button">承認済一覧を表示</button>
       </div>
 
       <div id="msg" class="msg"></div>
 
-      <div id="approvedBeforeWrap" class="table-wrap">
+      <div id="approvedBeforeWrap" class="table-wrap" style="display:none;">
         <table class="data-table">
           <thead>
             <tr>
@@ -45,9 +47,7 @@
               <th>決定</th>
             </tr>
           </thead>
-          <tbody id="approvedBeforeBody">
-            <tr><td colspan="7">読み込み中...</td></tr>
-          </tbody>
+          <tbody id="approvedBeforeBody"></tbody>
         </table>
       </div>
     </section>
@@ -82,11 +82,14 @@
 
     <section class="panel">
       <div class="panel-header">
-        <h2>決定済を表示</h2>
-        <div class="panel-note">PDFリンク付き</div>
+        <div>
+          <h2>決定済を表示</h2>
+          <div id="doneCount" class="count-badge">件数：-</div>
+        </div>
+        <button id="showDoneBtn" class="reload-btn" type="button">決定済一覧を表示</button>
       </div>
 
-      <div id="doneWrap" class="table-wrap">
+      <div id="doneWrap" class="table-wrap" style="display:none;">
         <table class="data-table">
           <thead>
             <tr>
@@ -99,13 +102,11 @@
               <th>PDFリンク</th>
             </tr>
           </thead>
-          <tbody id="doneBody">
-            <tr><td colspan="7">読み込み中...</td></tr>
-          </tbody>
+          <tbody id="doneBody"></tbody>
         </table>
       </div>
 
-      <div class="done-note">決定済はボタンを押すまで出さない</div>
+      <div class="done-note">最初は件数だけ表示します。一覧はボタンを押すと表示します。</div>
     </section>
   </div>
 

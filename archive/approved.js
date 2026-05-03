@@ -1,5 +1,8 @@
-//const GAS_URL = "https://script.google.com/macros/s/AKfycbxAFwRbhcNFfd2p5PmrzyGis7cS0p90Z0UMsHD0gCf31ZP945ZjQuyiC-22SlXx4_QX/exec";
 const $ = (id) => document.getElementById(id);
+
+let currentType = "";
+let allApprovedItems = [];
+let allDoneItems = [];
 
 function esc(s) {
   return String(s ?? "")
@@ -13,33 +16,29 @@ function setMsg(msg) {
   if ($("msg")) $("msg").textContent = msg || "";
 }
 
-let currentType = "";
-
-/* ===== ローディング ===== */
-function showLoading(text="処理中です..."){
+function showLoading(text = "処理中です...") {
   const el = $("loadingOverlay");
   const label = $("loadingText");
-  if(label) label.textContent = text;
-  if(el) el.classList.remove("hidden");
+  if (label) label.textContent = text;
+  if (el) el.classList.remove("hidden");
 }
 
-function hideLoading(){
+function hideLoading() {
   const el = $("loadingOverlay");
-  if(el) el.classList.add("hidden");
+  if (el) el.classList.add("hidden");
 }
 
-async function runWithLoading(btn,text,fn){
-  try{
+async function runWithLoading(btn, text, fn) {
+  try {
     showLoading(text);
-    if(btn) btn.disabled = true;
+    if (btn) btn.disabled = true;
     await fn();
-  }finally{
-    if(btn) btn.disabled = false;
+  } finally {
+    if (btn) btn.disabled = false;
     hideLoading();
   }
 }
 
-/* ===== API ===== */
 async function api(payload) {
   const res = await fetch(GAS_URL, {
     method: "POST",
@@ -48,7 +47,12 @@ async function api(payload) {
   });
 
   const text = await res.text();
-  return JSON.parse(text);
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error("JSONではない応答: " + text);
+  }
 }
 
 function currentSort() {
@@ -58,25 +62,57 @@ function currentSort() {
   };
 }
 
-/* ===== 描画 ===== */
+function sortItems(items) {
+  const { sortKey, sortDir } = currentSort();
+
+  return [...items].sort((a, b) => {
+    const av = String(a[sortKey] ?? "");
+    const bv = String(b[sortKey] ?? "");
+    const cmp = av.localeCompare(bv, "ja");
+    return sortDir === "asc" ? cmp : -cmp;
+  });
+}
+
+function filterItems(items) {
+  if (!currentType) return items;
+  return items.filter(x => String(x.type) === currentType);
+}
+
+function getApprovedFiltered() {
+  return sortItems(filterItems(allApprovedItems));
+}
+
+function getDoneFiltered() {
+  return sortItems(filterItems(allDoneItems));
+}
+
+function updateCounts() {
+  const approvedCount = getApprovedFiltered().length;
+  const doneCount = getDoneFiltered().length;
+
+  if ($("approvedCount")) $("approvedCount").textContent = `件数：${approvedCount}`;
+  if ($("doneCount")) $("doneCount").textContent = `件数：${doneCount}`;
+}
 
 function renderApprovedBefore(items) {
   const body = $("approvedBeforeBody");
-  if (!items?.length) {
+  if (!body) return;
+
+  if (!items || items.length === 0) {
     body.innerHTML = `<tr><td colspan="7">承認済（決定前）はありません</td></tr>`;
     return;
   }
 
   body.innerHTML = items.map(item => `
     <tr>
-      <td>${esc(item.createdAt)}</td>
-      <td>${esc(item.typeLabel)}</td>
-      <td>${esc(item.seiriNo)}</td>
-      <td>${esc(item.title)}</td>
-      <td>${esc(item.writer)}</td>
-      <td>${esc(item.updatedAt)}</td>
+      <td>${esc(item.createdAt || "")}</td>
+      <td>${esc(item.typeLabel || "")}</td>
+      <td>${esc(item.seiriNo || "")}</td>
+      <td>${esc(item.title || "")}</td>
+      <td>${esc(item.writer || "")}</td>
+      <td>${esc(item.updatedAt || "")}</td>
       <td>
-        <button class="decide-btn" onclick="markDone('${esc(item.kianId)}')">決定</button>
+        <button class="decide-btn" type="button" onclick="markDone('${esc(item.kianId)}')">決定</button>
       </td>
     </tr>
   `).join("");
@@ -84,23 +120,24 @@ function renderApprovedBefore(items) {
 
 function renderDone(items) {
   const body = $("doneBody");
+  if (!body) return;
 
-  if (!items?.length) {
+  if (!items || items.length === 0) {
     body.innerHTML = `<tr><td colspan="7">決定済はありません</td></tr>`;
     return;
   }
 
   body.innerHTML = items.map(item => `
     <tr>
-      <td>${esc(item.createdAt)}</td>
-      <td>${esc(item.typeLabel)}</td>
-      <td>${esc(item.seiriNo)}</td>
-      <td>${esc(item.title)}</td>
-      <td>${esc(item.writer)}</td>
-      <td>${esc(item.doneAt || item.updatedAt)}</td>
+      <td>${esc(item.createdAt || "")}</td>
+      <td>${esc(item.typeLabel || "")}</td>
+      <td>${esc(item.seiriNo || "")}</td>
+      <td>${esc(item.title || "")}</td>
+      <td>${esc(item.writer || "")}</td>
+      <td>${esc(item.doneAt || item.updatedAt || "")}</td>
       <td>
         ${item.finalPdfUrl
-          ? `<a href="${esc(item.finalPdfUrl)}" target="_blank">PDF</a>`
+          ? `<a class="pdf-link" href="${esc(item.finalPdfUrl)}" target="_blank" rel="noopener noreferrer">PDF</a>`
           : ""
         }
       </td>
@@ -108,76 +145,116 @@ function renderDone(items) {
   `).join("");
 }
 
-/* ===== 一括取得（高速化） ===== */
-async function loadAllFast(){
+function hideTables() {
+  if ($("approvedBeforeWrap")) $("approvedBeforeWrap").style.display = "none";
+  if ($("doneWrap")) $("doneWrap").style.display = "none";
+}
 
-  await runWithLoading(null,"データを読み込んでいます...",async ()=>{
+function showApprovedTable() {
+  renderApprovedBefore(getApprovedFiltered());
+  if ($("approvedBeforeWrap")) $("approvedBeforeWrap").style.display = "";
+}
 
-    const data = await api({ action:"getAllDataFast" });
+function showDoneTable() {
+  renderDone(getDoneFiltered());
+  if ($("doneWrap")) $("doneWrap").style.display = "";
+}
 
-    if(!data.ok){
-      setMsg("取得失敗");
-      return;
-    }
+async function loadDataCountsOnly() {
+  const data = await api({ action: "getAllDataFast" });
 
-    let approved = data.approvedItems || [];
-    let done = data.doneItems || [];
+  if (!data.ok) {
+    setMsg("取得失敗: " + (data.message || "unknown"));
+    return;
+  }
 
-    if(currentType){
-      approved = approved.filter(x => x.type === currentType);
-      done = done.filter(x => x.type === currentType);
-    }
+  allApprovedItems = data.approvedItems || [];
+  allDoneItems = data.doneItems || [];
 
-    renderApprovedBefore(approved);
-    renderDone(done);
+  updateCounts();
+  hideTables();
+  setMsg("");
+}
 
-    setMsg("");
+async function reloadCountsOnly() {
+  await runWithLoading(null, "件数を読み込んでいます...", async () => {
+    await loadDataCountsOnly();
   });
 }
 
-/* ===== 決定 ===== */
-async function markDone(kianId){
+async function markDone(kianId) {
+  if (!confirm("この承認済データを決定しますか？")) return;
 
-  if(!confirm("この承認済データを決定しますか？")) return;
-
-  await runWithLoading(null,"決定処理中...",async ()=>{
-
+  await runWithLoading(null, "決定処理中です...", async () => {
     const data = await api({
-      action:"markDone",
+      action: "markDone",
       kianId
     });
 
-    if(!data.ok){
-      setMsg("失敗");
+    if (!data.ok) {
+      setMsg("失敗: " + (data.message || "unknown"));
       return;
     }
 
     setMsg("決定しました");
-    await loadAllFast();
+    await loadDataCountsOnly();
   });
 }
+
 window.markDone = markDone;
 
-/* ===== 初期化 ===== */
 window.addEventListener("load", async () => {
-
   const auth = requirePageAuth(["admin"]);
   if (!auth) return;
 
-  $("authUserText").textContent = `${auth.name}（${auth.role}）`;
+  if ($("authUserText")) {
+    $("authUserText").textContent = `${auth.name}（${auth.role}）`;
+  }
+
+  if ($("logoutBtn")) {
+    $("logoutBtn").addEventListener("click", logoutToRoot);
+  }
 
   document.querySelectorAll(".filter-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
       document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentType = btn.dataset.type || "";
-      await loadAllFast();
+
+      updateCounts();
+      hideTables();
     });
   });
 
-  $("sortKey").addEventListener("change", loadAllFast);
-  $("sortDir").addEventListener("change", loadAllFast);
-  $("reloadBtn").addEventListener("click", loadAllFast);
+  if ($("sortKey")) {
+    $("sortKey").addEventListener("change", () => {
+      updateCounts();
+      hideTables();
+    });
+  }
 
-  await loadAllFast();
+  if ($("sortDir")) {
+    $("sortDir").addEventListener("change", () => {
+      updateCounts();
+      hideTables();
+    });
+  }
+
+  if ($("reloadBtn")) {
+    $("reloadBtn").addEventListener("click", reloadCountsOnly);
+  }
+
+  if ($("showApprovedBtn")) {
+    $("showApprovedBtn").addEventListener("click", () => {
+      showApprovedTable();
+    });
+  }
+
+  if ($("showDoneBtn")) {
+    $("showDoneBtn").addEventListener("click", () => {
+      showDoneTable();
+    });
+  }
+
+  await reloadCountsOnly();
 });

@@ -56,19 +56,25 @@ body {
 }
 
 .panel-header h2 {
-  margin: 0;
+  margin: 0 0 8px;
   font-size: 20px;
   font-weight: 700;
 }
 
-.panel-note,
-.done-note {
+.count-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #0d1b3d;
+  color: #fff;
+  border-radius: 999px;
   font-size: 14px;
-  color: #5d6a7d;
+  font-weight: 700;
 }
 
 .done-note {
   margin-top: 12px;
+  font-size: 14px;
+  color: #5d6a7d;
 }
 
 .msg {
@@ -168,26 +174,6 @@ body {
   text-decoration: underline;
 }
 
-@media (max-width: 900px) {
-  .toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .sort-area {
-    align-items: stretch;
-  }
-
-  .panel-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .auth-topbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
 /* ===== 処理中表示 ===== */
 .loading-overlay {
   position: fixed;
@@ -224,4 +210,30 @@ body {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+button:disabled {
+  opacity: .65;
+  cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sort-area {
+    align-items: stretch;
+  }
+
+  .panel-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .auth-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

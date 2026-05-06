@@ -2,8 +2,8 @@
 // 承認 + 差し戻し + PIN認証 + ローディング対応
 // 会長・理事長名 初期値対応
 
-const DEFAULT_APPROVER_A = "会長　穴井";
-const DEFAULT_APPROVER_B = "理事長　田川";
+const DEFAULT_APPROVER_A = "会長　穴井 隆信";
+const DEFAULT_APPROVER_B = "理事長　田川 晋治";
 
 function $(id){ return document.getElementById(id); }
 
@@ -212,7 +212,7 @@ function makeCard_(item){
 
   <div class="twoApprovers">
     <div class="approverBox ${aDone ? "doneBox" : ""} ${!canA ? "side-disabled" : ""}">
-      <strong>承認者A</strong>
+      <strong>承認者A　会長　穴井 隆信</strong>
 
       <label>氏名</label>
       <input
@@ -236,7 +236,7 @@ function makeCard_(item){
           ${disableA ? "disabled" : ""}
           onclick="${disableA ? "" : `approveOne('${esc(item.kianId)}','A')`}"
         >
-          ${aDone ? "A承認済" : "Aとして承認"}
+          ${aDone ? "会長　穴井 隆信　承認済" : "会長　穴井 隆信として承認"}
         </button>
 
         <button
@@ -244,13 +244,13 @@ function makeCard_(item){
           ${disableA ? "disabled" : ""}
           onclick="${disableA ? "" : `returnOne('${esc(item.kianId)}','A')`}"
         >
-          Aとして差し戻し
+          会長　穴井 隆信として差し戻し
         </button>
       </div>
     </div>
 
     <div class="approverBox ${bDone ? "doneBox" : ""} ${!canB ? "side-disabled" : ""}">
-      <strong>承認者B</strong>
+      <strong>承認者B　理事長　田川 晋治</strong>
 
       <label>氏名</label>
       <input
@@ -274,7 +274,7 @@ function makeCard_(item){
           ${disableB ? "disabled" : ""}
           onclick="${disableB ? "" : `approveOne('${esc(item.kianId)}','B')`}"
         >
-          ${bDone ? "B承認済" : "Bとして承認"}
+          ${bDone ? "理事長　田川 晋治　承認済" : "理事長　田川 晋治として承認"}
         </button>
 
         <button
@@ -282,7 +282,7 @@ function makeCard_(item){
           ${disableB ? "disabled" : ""}
           onclick="${disableB ? "" : `returnOne('${esc(item.kianId)}','B')`}"
         >
-          Bとして差し戻し
+          理事長　田川 晋治として差し戻し
         </button>
       </div>
     </div>

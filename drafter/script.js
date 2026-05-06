@@ -54,6 +54,9 @@ function escapeHtml(s) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
+
+/* ---------- 金額表示 ---------- */
+
 function formatYenInput(value) {
   const num = String(value || "").replace(/[^\d]/g, "");
   if (!num) return "";
@@ -68,14 +71,24 @@ function bindMoneyAmountFormat() {
   const el = $("moneyAmount");
   if (!el) return;
 
+  if (el.value) {
+    el.value = formatYenInput(el.value);
+  }
+
   el.addEventListener("focus", () => {
     el.value = unformatYenInput(el.value);
   });
 
+  el.addEventListener("input", () => {
+    el.value = el.value.replace(/[^\d]/g, "");
+  });
+
   el.addEventListener("blur", () => {
-    el.value = formatYenInput(el.value);
+    const num = unformatYenInput(el.value);
+    el.value = num ? formatYenInput(num) : "";
   });
 }
+
 function typeLabelJa(type) {
   if (type === "shishutsu") return "支出";
   if (type === "shuunyuu") return "収入";
@@ -519,12 +532,12 @@ window.restoreItem = function(mode, index) {
   applyTypeUI();
 
   if (item.type === "shishutsu") {
-    if ($("moneyAmount")) $("moneyAmount").value = item.amount || "";
+    if ($("moneyAmount")) $("moneyAmount").value = formatYenInput(item.amount || "");
     if ($("moneyPartner")) $("moneyPartner").value = item.payee || "";
     if ($("moneyMethod")) $("moneyMethod").value = item.method || "口座振込";
     if ($("moneyDate")) $("moneyDate").value = item.date || "";
   } else if (item.type === "shuunyuu") {
-    if ($("moneyAmount")) $("moneyAmount").value = item.amount || "";
+    if ($("moneyAmount")) $("moneyAmount").value = formatYenInput(item.amount || "");
     if ($("moneyPartner")) $("moneyPartner").value = item.payer || "";
     if ($("moneyMethod")) $("moneyMethod").value = item.method || "口座振込";
     if ($("moneyDate")) $("moneyDate").value = item.date || "";
@@ -597,8 +610,9 @@ function bindSummaryButtons() {
 
 window.addEventListener("load", async () => {
   const auth = requirePageAuth(["drafter", "admin"]);
-  bindMoneyAmountFormat();
   if (!auth) return;
+
+  bindMoneyAmountFormat();
 
   if ($("authUserText")) {
     $("authUserText").textContent = `${auth.name}（${auth.role}）`;

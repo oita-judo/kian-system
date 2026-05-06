@@ -597,6 +597,7 @@ function bindSummaryButtons() {
 
 window.addEventListener("load", async () => {
   const auth = requirePageAuth(["drafter", "admin"]);
+  bindMoneyAmountFormat();
   if (!auth) return;
 
   if ($("authUserText")) {

@@ -54,7 +54,28 @@ function escapeHtml(s) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
+function formatYenInput(value) {
+  const num = String(value || "").replace(/[^\d]/g, "");
+  if (!num) return "";
+  return "¥ " + Number(num).toLocaleString("ja-JP") + "-";
+}
 
+function unformatYenInput(value) {
+  return String(value || "").replace(/[^\d]/g, "");
+}
+
+function bindMoneyAmountFormat() {
+  const el = $("moneyAmount");
+  if (!el) return;
+
+  el.addEventListener("focus", () => {
+    el.value = unformatYenInput(el.value);
+  });
+
+  el.addEventListener("blur", () => {
+    el.value = formatYenInput(el.value);
+  });
+}
 function typeLabelJa(type) {
   if (type === "shishutsu") return "支出";
   if (type === "shuunyuu") return "収入";

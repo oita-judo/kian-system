@@ -273,12 +273,12 @@ async function buildPayload() {
   };
 
   if (type === "shishutsu") {
-    payload.amount = v("moneyAmount");
+    payload.amount = unformatYenInput(v("moneyAmount"));
     payload.payee = v("moneyPartner");
     payload.method = $("moneyMethod")?.value || "";
     payload.date = v("moneyDate");
   } else if (type === "shuunyuu") {
-    payload.amount = v("moneyAmount");
+    payload.amount = unformatYenInput(v("moneyAmount"));
     payload.payer = v("moneyPartner");
     payload.method = $("moneyMethod")?.value || "";
     payload.date = v("moneyDate");

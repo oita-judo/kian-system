@@ -218,11 +218,31 @@
       </div>
 
       <!-- 操作 -->
-      <div class="action-row">
-        <button id="sendBtn" type="button" class="mini-action-btn primary">送信</button>
-        <button id="clearBtn" type="button" class="mini-action-btn secondary">クリア</button>
-        <div id="status" class="status-text"></div>
-      </div>
+<div class="action-row">
+  <button id="previewBtn" type="button" class="mini-action-btn preview">
+    PDFプレビュー
+  </button>
+
+  <button id="sendBtn" type="button" class="mini-action-btn primary">
+    送信
+  </button>
+
+  <button id="clearBtn" type="button" class="mini-action-btn secondary">
+    クリア
+  </button>
+
+  <div id="status" class="status-text"></div>
+</div>
+      <div id="previewWrap" class="preview-wrap hidden">
+  <div class="preview-header">
+    <span>PDFプレビュー</span>
+    <button type="button" id="closePreviewBtn" class="mini-action-btn secondary">
+      閉じる
+    </button>
+  </div>
+
+  <iframe id="previewFrame"></iframe>
+</div>
     </div>
   </div>
 

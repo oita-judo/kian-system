@@ -1,4 +1,4 @@
-// drafter/script.js 最終高速版
+// drafter/script.js PDFプレビュー対応版
 
 const SUMMARY_CONFIG = {
   draft:    { countId: "countDraft",    wrapId: "draftListWrap",    listId: "draftSheetList" },
@@ -311,6 +311,12 @@ async function buildPayload() {
   return payload;
 }
 
+async function buildPreviewPayload() {
+  const payload = await buildPayload();
+  payload.action = "previewPdf";
+  return payload;
+}
+
 function validate(payload) {
   if (!payload.type) return "未入力：区分";
   if (!payload.seiriNo) return "未入力：整理番号";
@@ -335,6 +341,14 @@ function validate(payload) {
 
 /* ---------- actions ---------- */
 
+function clearPreview() {
+  const wrap = $("previewWrap");
+  const frame = $("previewFrame");
+
+  if (frame) frame.src = "";
+  if (wrap) wrap.classList.add("hidden");
+}
+
 function clearForm() {
   [
     "type", "draftNo", "seiriNo", "commonWriter", "kou", "moku", "setsu",
@@ -346,9 +360,56 @@ function clearForm() {
   if ($("moneyMethod")) $("moneyMethod").value = "口座振込";
 
   clearSelectedFiles();
+  clearPreview();
   showReturnComments(null);
   applyTypeUI();
   setStatus("");
+}
+
+async function previewPdf() {
+  const auth = getAuth();
+
+  if (!auth || !["drafter", "admin"].includes(auth.role)) {
+    setStatus("PDFプレビューの権限がありません。");
+    return;
+  }
+
+  const payload = await buildPreviewPayload();
+  const msg = validate(payload);
+
+  if (msg) {
+    setStatus(msg);
+    return;
+  }
+
+  setStatus("PDFプレビューを作成しています...");
+
+  const data = await api(payload);
+
+  if (!data.ok) {
+    setStatus("PDFプレビュー失敗: " + (data.message || "unknown"));
+    return;
+  }
+
+  const previewUrl =
+    data.previewUrl ||
+    data.pdfPreviewUrl ||
+    data.url ||
+    data.pdfUrl ||
+    "";
+
+  if (!previewUrl) {
+    setStatus("PDFプレビューURLが返ってきませんでした。GAS側の戻り値を確認してください。");
+    return;
+  }
+
+  const wrap = $("previewWrap");
+  const frame = $("previewFrame");
+
+  if (frame) frame.src = previewUrl;
+  if (wrap) wrap.classList.remove("hidden");
+
+  setStatus("PDFプレビューを表示しました");
 }
 
 async function send() {
@@ -501,13 +562,13 @@ function renderStatusTable(mode, items) {
 
 function showList(mode) {
   const cfg = SUMMARY_CONFIG[mode];
-  if (!cfg) return;
+  if (!cfg || !$(cfg.wrapId)) return;
   $(cfg.wrapId).style.display = "";
 }
 
 function hideList(mode) {
   const cfg = SUMMARY_CONFIG[mode];
-  if (!cfg) return;
+  if (!cfg || !$(cfg.wrapId)) return;
   $(cfg.wrapId).style.display = "none";
 }
 
@@ -626,6 +687,7 @@ window.addEventListener("load", async () => {
   bindSeiriNoRule();
   renderSelectedFiles();
   showReturnComments(null);
+  clearPreview();
 
   if ($("type")) $("type").addEventListener("change", applyTypeUI);
 
@@ -635,6 +697,17 @@ window.addEventListener("load", async () => {
 
   if ($("addFileBtn")) $("addFileBtn").addEventListener("click", addSelectedFile);
   if ($("clearFilesBtn")) $("clearFilesBtn").addEventListener("click", clearSelectedFiles);
+
+  if ($("previewBtn")) {
+    $("previewBtn").addEventListener("click", function () {
+      runWithLoading(this, "PDFプレビューを作成しています...", previewPdf)
+        .catch(err => setStatus("PDFプレビューエラー: " + err.message));
+    });
+  }
+
+  if ($("closePreviewBtn")) {
+    $("closePreviewBtn").addEventListener("click", clearPreview);
+  }
 
   if ($("saveDraftBtn")) {
     $("saveDraftBtn").addEventListener("click", function () {

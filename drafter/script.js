@@ -656,7 +656,35 @@ window.markApprovedDone = async function(kianId) {
     setStatus("確定しました");
   });
 };
+window.withdrawItem = async function(kianId) {
 
+  if (!kianId) return;
+
+  if (!confirm("この起案を取下げて下書きへ戻しますか？")) {
+    return;
+  }
+
+  await runWithLoading(
+    null,
+    "取下げ中です...",
+    async () => {
+
+      const data = await api({
+        action: "withdraw",
+        kianId
+      });
+
+      if (!data.ok) {
+        setStatus(data.message || "取下げ失敗");
+        return;
+      }
+
+      await loadAllFast();
+
+      setStatus("下書きへ戻しました");
+    }
+  );
+};
 /* ---------- init ---------- */
 
 function bindSummaryButtons() {

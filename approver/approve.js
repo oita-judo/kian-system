@@ -191,7 +191,7 @@ function makeCard_(item){
 
   <div class="title">${esc(item.title || "")}</div>
 
-  <div class="content">${esc(item.content || "")}</div>
+  <div class="content">${item.content || ""}</div>
 
   <div class="meta">
     ${item.kou ? `<span>項: ${esc(item.kou)}</span>` : ""}

@@ -601,6 +601,9 @@ window.restoreItem = function(mode, index) {
   if ($("commonContent")) if ($("commonContent")) {
   $("commonContent").innerHTML =
     item.content || "";
+    if ($("commonContent")) {
+  $("commonContent").innerHTML = "";
+}
 }
 
   applyTypeUI();

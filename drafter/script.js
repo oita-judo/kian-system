@@ -281,7 +281,9 @@ async function buildPayload() {
     setsu: v("setsu"),
     title: v("commonTitle"),
     writer: v("commonWriter"),
-    content: v("commonContent"),
+    content: $("commonContent")
+  ? $("commonContent").innerHTML
+  : "",
     attachments: []
   };
 

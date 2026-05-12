@@ -598,7 +598,10 @@ window.restoreItem = function(mode, index) {
   if ($("moku")) $("moku").value = item.moku || "";
   if ($("setsu")) $("setsu").value = item.setsu || "";
   if ($("commonTitle")) $("commonTitle").value = item.title || "";
-  if ($("commonContent")) $("commonContent").value = item.content || "";
+  if ($("commonContent")) if ($("commonContent")) {
+  $("commonContent").innerHTML =
+    item.content || "";
+}
 
   applyTypeUI();
 

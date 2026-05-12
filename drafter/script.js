@@ -522,6 +522,14 @@ function actionButtons(mode, item, index) {
   if (mode === "approved" && canMarkDone_()) {
     buttons.push(`<button class="mini-btn done" onclick="markApprovedDone('${escapeHtml(item.kianId)}')">確定</button>`);
   }
+  if (mode === "pending") {
+  buttons.push(`
+    <button class="mini-btn danger"
+      onclick="withdrawItem('${escapeHtml(item.kianId)}')">
+      取下げ
+    </button>
+  `);
+}
 
   return buttons.join("");
 }

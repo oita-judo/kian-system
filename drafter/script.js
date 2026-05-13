@@ -354,10 +354,15 @@ function clearPreview() {
 function clearForm() {
   [
     "type", "draftNo", "seiriNo", "commonWriter", "kou", "moku", "setsu",
-    "commonTitle", "commonContent", "moneyAmount", "moneyPartner", "moneyDate"
+    "commonTitle", "moneyAmount", "moneyPartner", "moneyDate"
   ].forEach(id => {
     if ($(id)) $(id).value = "";
   });
+
+  // 内容欄は contenteditable なので value ではなく innerHTML で消す
+  if ($("commonContent")) {
+    $("commonContent").innerHTML = "";
+  }
 
   if ($("moneyMethod")) $("moneyMethod").value = "口座振込";
 

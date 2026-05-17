@@ -157,6 +157,11 @@ function applyTypeUI() {
   });
 
   syncCommonToHiddenFields();
+
+  if ($("autoSeiriBtn")) {
+  $("autoSeiriBtn").style.display =
+    $("type")?.value === "ringi" ? "" : "none";
+}
 }
 
 function bindSeiriNoRule() {
@@ -760,6 +765,30 @@ window.addEventListener("load", async () => {
         .catch(err => setStatus("下書き保存エラー: " + err.message));
     });
   }
+
+  if ($("autoSeiriBtn")) {
+  $("autoSeiriBtn").addEventListener("click", async function () {
+    if ($("type")?.value !== "ringi") {
+      setStatus("整理番号の自動入力は稟議のみです。");
+      return;
+    }
+
+    await runWithLoading(this, "整理番号を取得しています...", async () => {
+      const data = await api({
+        action: "getNextSeiriNo",
+        type: "ringi"
+      });
+
+      if (!data.ok) {
+        setStatus(data.message || "整理番号の取得に失敗しました");
+        return;
+      }
+
+      if ($("seiriNo")) $("seiriNo").value = data.nextSeiriNo;
+      setStatus("稟議の整理番号を自動入力しました");
+    });
+  });
+}
 
   if ($("sendBtn")) {
     $("sendBtn").addEventListener("click", function () {

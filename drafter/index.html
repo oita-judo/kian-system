@@ -122,9 +122,14 @@
       </div>
 
       <div class="field">
-        <label for="seiriNo">整理番号</label>
-        <input type="text" id="seiriNo" placeholder="例：1">
-      </div>
+  <label for="seiriNo">整理番号</label>
+  <div style="display:flex; gap:8px;">
+    <input type="text" id="seiriNo" placeholder="例：1">
+    <button type="button" class="mini-action-btn secondary" id="autoSeiriBtn" style="display:none;">
+      自動
+    </button>
+  </div>
+</div>
 
       <div class="field">
         <label for="commonWriter">記載者氏名</label>

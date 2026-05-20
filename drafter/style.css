@@ -634,3 +634,9 @@ button:disabled {
   font-size:18px;
   line-height:1.8;
 }
+.summary-sub-count{
+  margin-top:8px;
+  font-size:14px;
+  color:#475569;
+  font-weight:700;
+}

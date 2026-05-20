@@ -505,6 +505,7 @@ async function loadAllFast() {
 
   if ($("countDraft")) $("countDraft").textContent = counts.draft ?? 0;
   if ($("countPending")) $("countPending").textContent = counts.pending ?? 0;
+  updatePendingUnapproved(data.pendingItems || []);
   if ($("countReturned")) $("countReturned").textContent = counts.returned ?? 0;
   if ($("countApproved")) $("countApproved").textContent = counts.approved ?? 0;
 
@@ -545,7 +546,30 @@ function actionButtons(mode, item, index) {
 
   return buttons.join("");
 }
+function updatePendingUnapproved(items) {
 
+  let needA = 0;
+  let needB = 0;
+
+  items.forEach(item => {
+
+    if (!item.approverA) {
+      needA++;
+    }
+
+    if (!item.approverB) {
+      needB++;
+    }
+
+  });
+
+  const el = $("pendingSubCount");
+
+  if (el) {
+    el.textContent =
+      `未承認（会長 ${needA}件、理事長 ${needB}件）`;
+  }
+}
 function renderStatusTable(mode, items) {
   const cfg = SUMMARY_CONFIG[mode];
   const box = $(cfg.listId);

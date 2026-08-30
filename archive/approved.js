@@ -303,3 +303,329 @@ window.addEventListener("load", async () => {
 
   await reloadCountsOnly();
 });
+// ========================================
+// PDF結合
+// ========================================
+
+async function mergePdf(kianId) {
+
+  if (!confirm("起案書と決定版を結合しますか？")) {
+    return;
+  }
+
+  await runWithLoading(
+    null,
+    "PDFを結合しています...",
+    async () => {
+
+      try {
+
+        // -------------------------------
+        // 1. 結合可能か確認
+        // -------------------------------
+
+        const target = await api({
+          action: "getMergeTarget",
+          kianId: kianId
+        });
+
+
+        if (!target.ok) {
+
+          if (target.alreadyDone) {
+
+            setMsg(
+              "この文書はすでに結合済みです。"
+            );
+
+            await loadDataCountsOnly();
+            showDoneTable();
+
+          } else {
+
+            setMsg(
+              "結合できません: " +
+              (target.message || "")
+            );
+          }
+
+          return;
+        }
+
+
+        // -------------------------------
+        // 2. 起案書PDFを取得
+        // -------------------------------
+
+        setMsg("起案書PDFを取得しています...");
+
+        const kianData = await api({
+          action: "getPdfBase64",
+          kianId: kianId,
+          kind: "kian"
+        });
+
+
+        if (!kianData.ok) {
+
+          setMsg(
+            "起案書PDFの取得に失敗しました: " +
+            (kianData.message || "")
+          );
+
+          return;
+        }
+
+
+        // -------------------------------
+        // 3. 決定版PDFを取得
+        // -------------------------------
+
+        setMsg("決定版PDFを取得しています...");
+
+        const finalData = await api({
+          action: "getPdfBase64",
+          kianId: kianId,
+          kind: "final"
+        });
+
+
+        if (!finalData.ok) {
+
+          setMsg(
+            "決定版PDFの取得に失敗しました: " +
+            (finalData.message || "")
+          );
+
+          return;
+        }
+
+
+        // -------------------------------
+        // 4. Base64 → バイト列
+        // -------------------------------
+
+        const kianBytes =
+          base64ToBytes(
+            kianData.base64
+          );
+
+        const finalBytes =
+          base64ToBytes(
+            finalData.base64
+          );
+
+
+        // -------------------------------
+        // 5. PDF結合
+        // -------------------------------
+
+        setMsg("PDFを結合しています...");
+
+
+        if (
+          typeof PDFLib === "undefined"
+        ) {
+
+          setMsg(
+            "PDF結合ライブラリを読み込めませんでした。"
+          );
+
+          return;
+        }
+
+
+        const mergedPdf =
+          await PDFLib.PDFDocument.create();
+
+
+        // 起案書
+        const kianPdf =
+          await PDFLib.PDFDocument.load(
+            kianBytes
+          );
+
+
+        const kianPages =
+          await mergedPdf.copyPages(
+            kianPdf,
+            kianPdf.getPageIndices()
+          );
+
+
+        kianPages.forEach(page => {
+          mergedPdf.addPage(page);
+        });
+
+
+        // 決定版
+        const finalPdf =
+          await PDFLib.PDFDocument.load(
+            finalBytes
+          );
+
+
+        const finalPages =
+          await mergedPdf.copyPages(
+            finalPdf,
+            finalPdf.getPageIndices()
+          );
+
+
+        finalPages.forEach(page => {
+          mergedPdf.addPage(page);
+        });
+
+
+        // -------------------------------
+        // 6. 結合PDFを作成
+        // -------------------------------
+
+        const mergedBytes =
+          await mergedPdf.save();
+
+
+        const mergedBase64 =
+          bytesToBase64(
+            mergedBytes
+          );
+
+
+        // -------------------------------
+        // 7. Google Driveへ保存
+        // -------------------------------
+
+        setMsg(
+          "結合PDFを保存しています..."
+        );
+
+
+        const saved = await api({
+          action: "saveMergedPdf",
+          kianId: kianId,
+          base64Data: mergedBase64
+        });
+
+
+        if (!saved.ok) {
+
+          if (saved.alreadyDone) {
+
+            setMsg(
+              "この文書はすでに結合済みです。"
+            );
+
+          } else {
+
+            setMsg(
+              "保存に失敗しました: " +
+              (saved.message || "")
+            );
+          }
+
+          await loadDataCountsOnly();
+          showDoneTable();
+
+          return;
+        }
+
+
+        // -------------------------------
+        // 8. 完了
+        // -------------------------------
+
+        setMsg(
+          "PDF結合完了：" +
+          saved.fileName
+        );
+
+
+        // 一覧を再取得
+        await loadDataCountsOnly();
+
+        // 決定済一覧を再表示
+        showDoneTable();
+
+
+      } catch (err) {
+
+        console.error(err);
+
+        setMsg(
+          "PDF結合エラー: " +
+          err.message
+        );
+      }
+    }
+  );
+}
+
+
+// ========================================
+// Base64 → Uint8Array
+// ========================================
+
+function base64ToBytes(base64) {
+
+  const binary =
+    atob(base64);
+
+  const bytes =
+    new Uint8Array(
+      binary.length
+    );
+
+
+  for (
+    let i = 0;
+    i < binary.length;
+    i++
+  ) {
+
+    bytes[i] =
+      binary.charCodeAt(i);
+  }
+
+
+  return bytes;
+}
+
+
+// ========================================
+// Uint8Array → Base64
+// ========================================
+
+function bytesToBase64(bytes) {
+
+  let binary = "";
+
+  const chunkSize =
+    0x8000;
+
+
+  for (
+    let i = 0;
+    i < bytes.length;
+    i += chunkSize
+  ) {
+
+    const chunk =
+      bytes.subarray(
+        i,
+        i + chunkSize
+      );
+
+
+    binary +=
+      String.fromCharCode(
+        ...chunk
+      );
+  }
+
+
+  return btoa(binary);
+}
+
+
+// onclick から使用できるようにする
+window.mergePdf = mergePdf;

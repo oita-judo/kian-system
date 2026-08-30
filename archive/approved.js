@@ -121,28 +121,50 @@ function renderApprovedBefore(items) {
 function renderDone(items) {
 
   const body = $("doneBody");
+
   if (!body) return;
 
+
   if (!items || items.length === 0) {
+
     body.innerHTML =
-      `<tr><td colspan="8">決定済はありません</td></tr>`;
+      `<tr>
+        <td colspan="8">
+          決定済はありません
+        </td>
+      </tr>`;
+
     return;
   }
 
+
   body.innerHTML = items.map(item => `
+
     <tr>
 
-      <td>${esc(item.createdAt || "")}</td>
-
-      <td>${esc(item.typeLabel || "")}</td>
-
-      <td>${esc(item.seiriNo || "")}</td>
-
-      <td>${esc(item.title || "")}</td>
+      <td>
+        ${esc(item.createdAt || "")}
+      </td>
 
       <td>
+        ${esc(item.typeLabel || "")}
+      </td>
+
+      <td>
+        ${esc(item.seiriNo || "")}
+      </td>
+
+      <td>
+        ${esc(item.title || "")}
+      </td>
+
+
+      <!-- 完成PDF -->
+      <td>
+
         ${
           item.mergedPdfUrl
+
             ? `
               <span class="merged-done">
                 ✓ 結合済
@@ -156,6 +178,7 @@ function renderDone(items) {
                 開く
               </a>
             `
+
             : `
               <button
                 type="button"
@@ -165,15 +188,25 @@ function renderDone(items) {
               </button>
             `
         }
+
       </td>
 
-      <td>${esc(item.writer || "")}</td>
-
-      <td>${esc(item.doneAt || "")}</td>
 
       <td>
+        ${esc(item.writer || "")}
+      </td>
+
+      <td>
+        ${esc(item.doneAt || "")}
+      </td>
+
+
+      <!-- 決定版PDF -->
+      <td>
+
         ${
           item.finalPdfUrl
+
             ? `
               <a
                 class="pdf-link"
@@ -183,11 +216,14 @@ function renderDone(items) {
                 PDF
               </a>
             `
+
             : ""
         }
+
       </td>
 
     </tr>
+
   `).join("");
 }
 function hideTables() {

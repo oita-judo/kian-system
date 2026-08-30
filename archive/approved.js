@@ -119,30 +119,53 @@ function renderApprovedBefore(items) {
 }
 
 function renderDone(items) {
+
   const body = $("doneBody");
-  if (!body) return;
 
-  if (!items || items.length === 0) {
-    body.innerHTML = `<tr><td colspan="7">決定済はありません</td></tr>`;
-    return;
-  }
+  body.innerHTML = "";
 
-  body.innerHTML = items.map(item => `
-    <tr>
-      <td>${esc(item.createdAt || "")}</td>
+  items.forEach(item => {
+
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${esc(item.kianDate || "")}</td>
+
       <td>${esc(item.typeLabel || "")}</td>
+
       <td>${esc(item.seiriNo || "")}</td>
+
       <td>${esc(item.title || "")}</td>
+
+      <td>
+        <button
+          type="button"
+          class="merge-btn"
+          onclick="mergePdf('${esc(item.kianId)}')">
+          PDF結合
+        </button>
+      </td>
+
       <td>${esc(item.writer || "")}</td>
-      <td>${esc(item.doneAt || item.updatedAt || "")}</td>
+
+      <td>${esc(item.decidedAt || "")}</td>
+
       <td>
         ${item.finalPdfUrl
-          ? `<a class="pdf-link" href="${esc(item.finalPdfUrl)}" target="_blank" rel="noopener noreferrer">PDF</a>`
+          ? `<a
+               class="pdf-link"
+               href="${esc(item.finalPdfUrl)}"
+               target="_blank"
+               rel="noopener noreferrer">
+               PDF
+             </a>`
           : ""
         }
       </td>
-    </tr>
-  `).join("");
+    `;
+
+    body.appendChild(tr);
+  });
 }
 
 function hideTables() {

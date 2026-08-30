@@ -121,15 +121,18 @@ function renderApprovedBefore(items) {
 function renderDone(items) {
 
   const body = $("doneBody");
+  if (!body) return;
 
-  body.innerHTML = "";
+  if (!items || items.length === 0) {
+    body.innerHTML =
+      `<tr><td colspan="8">決定済はありません</td></tr>`;
+    return;
+  }
 
-  items.forEach(item => {
+  body.innerHTML = items.map(item => `
+    <tr>
 
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${esc(item.kianDate || "")}</td>
+      <td>${esc(item.createdAt || "")}</td>
 
       <td>${esc(item.typeLabel || "")}</td>
 
@@ -138,36 +141,55 @@ function renderDone(items) {
       <td>${esc(item.title || "")}</td>
 
       <td>
-        <button
-          type="button"
-          class="merge-btn"
-          onclick="mergePdf('${esc(item.kianId)}')">
-          PDF結合
-        </button>
+        ${
+          item.mergedPdfUrl
+            ? `
+              <span class="merged-done">
+                ✓ 結合済
+              </span>
+
+              <a
+                class="pdf-link"
+                href="${esc(item.mergedPdfUrl)}"
+                target="_blank"
+                rel="noopener noreferrer">
+                開く
+              </a>
+            `
+            : `
+              <button
+                type="button"
+                class="merge-btn"
+                onclick="mergePdf('${esc(item.kianId)}')">
+                PDF結合
+              </button>
+            `
+        }
       </td>
 
       <td>${esc(item.writer || "")}</td>
 
-      <td>${esc(item.decidedAt || "")}</td>
+      <td>${esc(item.doneAt || "")}</td>
 
       <td>
-        ${item.finalPdfUrl
-          ? `<a
-               class="pdf-link"
-               href="${esc(item.finalPdfUrl)}"
-               target="_blank"
-               rel="noopener noreferrer">
-               PDF
-             </a>`
-          : ""
+        ${
+          item.finalPdfUrl
+            ? `
+              <a
+                class="pdf-link"
+                href="${esc(item.finalPdfUrl)}"
+                target="_blank"
+                rel="noopener noreferrer">
+                PDF
+              </a>
+            `
+            : ""
         }
       </td>
-    `;
 
-    body.appendChild(tr);
-  });
+    </tr>
+  `).join("");
 }
-
 function hideTables() {
   if ($("approvedBeforeWrap")) $("approvedBeforeWrap").style.display = "none";
   if ($("doneWrap")) $("doneWrap").style.display = "none";

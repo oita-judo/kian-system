@@ -1,4 +1,5 @@
-# kian-system
+# kian-system 
+http://oita-judo.github.io/kian-system
 # 文書起案システム
 起案者(drafter)
 　index.html script.js style.css

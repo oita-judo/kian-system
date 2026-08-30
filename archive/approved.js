@@ -439,43 +439,38 @@ async function mergePdf(kianId) {
           await PDFLib.PDFDocument.create();
 
 
-        // 起案書
-        const kianPdf =
-          await PDFLib.PDFDocument.load(
-            kianBytes
-          );
+ // 決定版
+const finalPdf =
+  await PDFLib.PDFDocument.load(
+    finalBytes
+  );
+
+const finalPages =
+  await mergedPdf.copyPages(
+    finalPdf,
+    finalPdf.getPageIndices()
+  );
+
+finalPages.forEach(page => {
+  mergedPdf.addPage(page);
+});
 
 
-        const kianPages =
-          await mergedPdf.copyPages(
-            kianPdf,
-            kianPdf.getPageIndices()
-          );
+// 起案書
+const kianPdf =
+  await PDFLib.PDFDocument.load(
+    kianBytes
+  );
 
+const kianPages =
+  await mergedPdf.copyPages(
+    kianPdf,
+    kianPdf.getPageIndices()
+  );
 
-        kianPages.forEach(page => {
-          mergedPdf.addPage(page);
-        });
-
-
-        // 決定版
-        const finalPdf =
-          await PDFLib.PDFDocument.load(
-            finalBytes
-          );
-
-
-        const finalPages =
-          await mergedPdf.copyPages(
-            finalPdf,
-            finalPdf.getPageIndices()
-          );
-
-
-        finalPages.forEach(page => {
-          mergedPdf.addPage(page);
-        });
-
+kianPages.forEach(page => {
+  mergedPdf.addPage(page);
+});
 
         // -------------------------------
         // 6. 結合PDFを作成
